@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
 
 import {
-  BlockMarkdownEditor,
+  DocumentEditor,
   releaseImageDraft,
   type ImageDraft,
 } from '../src'
 
-const SAMPLE = `# 块编辑器
+const SAMPLE = `# 文档标题
 
 在这里写正文。选中文字会出现工具条。
 
@@ -45,11 +45,11 @@ export const Playground = () => {
   return (
     <main className="playground">
       <header className="playground__header">
-        <h1>Block Markdown Editor</h1>
-        <p>受控 Markdown。图片先变成本地草稿，上传由宿主处理。</p>
+        <h1>Document Editor</h1>
+        <p>受控文档。图片先变成本地草稿，上传由接入方处理。</p>
       </header>
       <section className="playground__editor">
-        <BlockMarkdownEditor
+        <DocumentEditor
           imageDrafts={drafts}
           onChange={setValue}
           onImageDraftCreate={registerDraft}

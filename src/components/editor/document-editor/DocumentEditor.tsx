@@ -3,10 +3,10 @@ import { EditorImageDialogs } from './EditorImageDialogs'
 import { useBlockEditorInteractions } from './hooks/useBlockEditorInteractions'
 import { useEditorImageUpload } from './hooks/useEditorImageUpload'
 import { useBlockEditorModel } from './hooks/useBlockEditorModel'
-import type { BlockMarkdownEditorProps } from './types'
-import './blockMarkdownEditor.css'
+import type { DocumentEditorProps } from './types'
+import './documentEditor.css'
 
-export const BlockMarkdownEditor = ({
+export const DocumentEditor = ({
   value,
   onChange,
   readOnly = false,
@@ -17,7 +17,7 @@ export const BlockMarkdownEditor = ({
   imageDrafts = new Map(),
   onImageDraftCreate,
   onImageDraftRelease,
-}: BlockMarkdownEditorProps) => {
+}: DocumentEditorProps) => {
   const model = useBlockEditorModel(value, onChange)
   const imageUpload = useEditorImageUpload({
     model,

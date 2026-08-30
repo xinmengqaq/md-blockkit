@@ -82,7 +82,7 @@ export type EditorBlock =
   | TableBlock
   | DividerBlock
 
-export type BlockMarkdownEditorProps = {
+export type DocumentEditorProps = {
   value: string
   onChange: (value: string) => void
   readOnly?: boolean

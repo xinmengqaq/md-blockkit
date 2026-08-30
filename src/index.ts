@@ -1,8 +1,8 @@
 import './styles/variables.css'
 import './styles/syntax-highlight.css'
 
-export { BlockMarkdownEditor } from './components/editor/block-markdown-editor'
-export type { BlockMarkdownEditorProps } from './components/editor/block-markdown-editor'
+export { DocumentEditor } from './components/editor/document-editor'
+export type { DocumentEditorProps } from './components/editor/document-editor'
 export type { ImageDraft } from './types/file'
 export {
   createImageDraft,

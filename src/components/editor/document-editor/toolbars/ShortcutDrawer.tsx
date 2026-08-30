@@ -4,7 +4,7 @@ const shortcutGroups = [
   {
     title: '基础编辑',
     items: [
-      ['Ctrl + S', '保存文章'],
+      ['Ctrl + S', '保存'],
       ['Ctrl + Z', '撤销'],
       ['Ctrl + Shift + Z / Ctrl + Y', '重做'],
       ['Esc', '关闭当前浮层'],

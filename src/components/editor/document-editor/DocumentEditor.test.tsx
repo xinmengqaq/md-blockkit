@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { ImageDraft } from '@/types/file'
 
-import { BlockMarkdownEditor } from './BlockMarkdownEditor'
+import { DocumentEditor } from './DocumentEditor'
 
 const editableCases = [
   {
@@ -75,12 +75,12 @@ const selectContents = (element: HTMLElement) => {
   act(() => document.dispatchEvent(new Event('selectionchange')))
 }
 
-describe('BlockMarkdownEditor', () => {
+describe('DocumentEditor', () => {
   afterEach(() => vi.restoreAllMocks())
 
   it('应在连续画布中渲染基础 Markdown 块', () => {
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={
           '# 标题\n\n普通段落\n\n> 引用\n\n- 列表\n\n```ts\nconst a = 1\n```'
         }
@@ -97,7 +97,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('应将 Markdown 分隔线渲染为编辑器分隔线', () => {
     const { container } = render(
-      <BlockMarkdownEditor value={'上文\n\n---\n\n下文'} onChange={vi.fn()} />,
+      <DocumentEditor value={'上文\n\n---\n\n下文'} onChange={vi.fn()} />,
     )
 
     expect(
@@ -109,7 +109,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('编辑段落时应输出序列化后的 Markdown', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="原文" onChange={onChange} />)
+    render(<DocumentEditor value="原文" onChange={onChange} />)
     const paragraph = screen.getByText('原文')
 
     paragraph.innerHTML = '修改后的 <strong>正文</strong>'
@@ -126,7 +126,7 @@ describe('BlockMarkdownEditor', () => {
         callbacks.push(callback)
         return callbacks.length
       })
-    render(<BlockMarkdownEditor value="前中后" onChange={vi.fn()} />)
+    render(<DocumentEditor value="前中后" onChange={vi.fn()} />)
     const paragraph = screen.getByText('前中后')
     paragraph.focus()
     paragraph.innerHTML = '前后'
@@ -157,7 +157,7 @@ describe('BlockMarkdownEditor', () => {
       })
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor value="上一段" onChange={onChange} />,
+      <DocumentEditor value="上一段" onChange={onChange} />,
     )
     const previous = screen.getByText('上一段')
     previous.focus()
@@ -188,7 +188,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('readOnly 时应禁止编辑并隐藏块创建入口', () => {
-    render(<BlockMarkdownEditor value="只读正文" onChange={vi.fn()} readOnly />)
+    render(<DocumentEditor value="只读正文" onChange={vi.fn()} readOnly />)
 
     expect(screen.getByText('只读正文')).toHaveAttribute(
       'contenteditable',
@@ -203,7 +203,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('块旁加号应打开菜单并插入所选块', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
 
     fireEvent.click(screen.getByRole('button', { name: '在此块后插入' }))
     fireEvent.click(screen.getByRole('menuitem', { name: '二级标题' }))
@@ -213,7 +213,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('空段落输入斜杠应保留普通文字输入', () => {
     const { container } = render(
-      <BlockMarkdownEditor value="" onChange={vi.fn()} />,
+      <DocumentEditor value="" onChange={vi.fn()} />,
     )
     const paragraph = container.querySelector<HTMLElement>(
       '[data-editor-input]',
@@ -227,7 +227,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('Enter 应按光标位置拆分普通段落', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="前半段后半段" onChange={onChange} />)
+    render(<DocumentEditor value="前半段后半段" onChange={onChange} />)
     const paragraph = screen.getByText('前半段后半段')
     const textNode = paragraph.firstChild!
     const selection = window.getSelection()!
@@ -244,7 +244,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('输入法组合态按 Enter 应交给输入法确认候选词', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="输入中" onChange={onChange} />)
+    render(<DocumentEditor value="输入中" onChange={onChange} />)
     const paragraph = screen.getByText('输入中')
 
     const allowed = fireEvent.keyDown(paragraph, {
@@ -260,7 +260,7 @@ describe('BlockMarkdownEditor', () => {
     '$name 应同步真实输入和删除后的最终 Markdown',
     ({ value, initial, changed, expected, empty }) => {
       const onChange = vi.fn()
-      render(<BlockMarkdownEditor value={value} onChange={onChange} />)
+      render(<DocumentEditor value={value} onChange={onChange} />)
       const editable = screen.getByText(initial)
 
       editable.innerHTML = changed
@@ -280,7 +280,7 @@ describe('BlockMarkdownEditor', () => {
     '$name 的完整输入法组合期间不应提交中间文字',
     ({ value, initial, changed, expected }) => {
       const onChange = vi.fn()
-      render(<BlockMarkdownEditor value={value} onChange={onChange} />)
+      render(<DocumentEditor value={value} onChange={onChange} />)
       const editable = screen.getByText(initial)
       const finalText = changed
 
@@ -320,16 +320,16 @@ describe('BlockMarkdownEditor', () => {
       })
     const onChange = vi.fn()
     const { rerender } = render(
-      <BlockMarkdownEditor value="本地正文" onChange={onChange} />,
+      <DocumentEditor value="本地正文" onChange={onChange} />,
     )
     const editable = screen.getByText('本地正文')
     editable.focus()
 
     editable.innerHTML = '本地修改'
     fireEvent.input(editable)
-    rerender(<BlockMarkdownEditor value="本地修改" onChange={onChange} />)
+    rerender(<DocumentEditor value="本地修改" onChange={onChange} />)
 
-    rerender(<BlockMarkdownEditor value="服务端正文" onChange={onChange} />)
+    rerender(<DocumentEditor value="服务端正文" onChange={onChange} />)
     expect(screen.getByText('本地修改')).toBeInTheDocument()
 
     editable.blur()
@@ -337,13 +337,13 @@ describe('BlockMarkdownEditor', () => {
 
     expect(screen.getByText('服务端正文')).toBeInTheDocument()
 
-    rerender(<BlockMarkdownEditor value="本地修改" onChange={onChange} />)
+    rerender(<DocumentEditor value="本地修改" onChange={onChange} />)
     expect(screen.getByText('本地修改')).toBeInTheDocument()
     requestFrame.mockRestore()
   })
 
   it('不再占用浏览器常用的 Ctrl+E 和 Ctrl+Shift+D', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
     const paragraph = screen.getByText('正文')
     selectText(paragraph)
 
@@ -359,7 +359,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('输入 Markdown 快捷语法应转换当前段落块', () => {
     const { container } = render(
-      <BlockMarkdownEditor value="" onChange={vi.fn()} />,
+      <DocumentEditor value="" onChange={vi.fn()} />,
     )
     const paragraph = container.querySelector<HTMLElement>(
       '[data-editor-input]',
@@ -373,7 +373,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('选中块应显示块工具浮层', () => {
     const { container } = render(
-      <BlockMarkdownEditor value="正文" onChange={vi.fn()} />,
+      <DocumentEditor value="正文" onChange={vi.fn()} />,
     )
     const block = container.querySelector<HTMLElement>('.block-editor__block')!
 
@@ -388,7 +388,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('块工具应支持切换块类型', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
 
     fireEvent.click(screen.getByRole('button', { name: '打开块工具' }))
     fireEvent.click(screen.getByRole('button', { name: '切换为二级标题' }))
@@ -401,7 +401,7 @@ describe('BlockMarkdownEditor', () => {
   it('块工具应支持移动、复制和删除块', () => {
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor value={'第一段\n\n第二段'} onChange={onChange} />,
+      <DocumentEditor value={'第一段\n\n第二段'} onChange={onChange} />,
     )
 
     const openFirstBlockToolbar = () => {
@@ -428,7 +428,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('Ctrl 点击块柄应多选块并显示批量工具', () => {
     render(
-      <BlockMarkdownEditor value={'第一段\n\n第二段'} onChange={vi.fn()} />,
+      <DocumentEditor value={'第一段\n\n第二段'} onChange={vi.fn()} />,
     )
     const handles = screen.getAllByRole('button', { name: '打开块工具' })
 
@@ -445,7 +445,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('Shift 点击块柄应从选择锚点连续选择', () => {
     const { container } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'第一段\n\n第二段\n\n第三段'}
         onChange={vi.fn()}
       />,
@@ -460,7 +460,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('从块间空白拖框应按 pointer 事件链多选相交块', () => {
     const { container } = render(
-      <BlockMarkdownEditor value={'第一段\n\n第二段'} onChange={vi.fn()} />,
+      <DocumentEditor value={'第一段\n\n第二段'} onChange={vi.fn()} />,
     )
     const editor = screen.getByLabelText('块状 Markdown 编辑器')
     const documentSurface = container.querySelector<HTMLElement>(
@@ -523,7 +523,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('Ctrl 撤销和两种重做快捷键应恢复正文并保留编辑焦点', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="初始正文" onChange={onChange} />)
+    render(<DocumentEditor value="初始正文" onChange={onChange} />)
     const editable = screen.getByText('初始正文')
     editable.focus()
     editable.innerHTML = '修改正文'
@@ -550,7 +550,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('Meta + Z 应使用编辑器历史并阻止浏览器默认撤销', () => {
-    render(<BlockMarkdownEditor value="初始正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="初始正文" onChange={vi.fn()} />)
     const editable = screen.getByText('初始正文')
     editable.focus()
     editable.innerHTML = '修改正文'
@@ -564,7 +564,7 @@ describe('BlockMarkdownEditor', () => {
   it('批量删除应一次删除全部已选块', () => {
     const onChange = vi.fn()
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'第一段\n\n第二段\n\n保留段'}
         onChange={onChange}
       />,
@@ -581,7 +581,7 @@ describe('BlockMarkdownEditor', () => {
   it('批量转换为段落应统一所选块类型', () => {
     const onChange = vi.fn()
     render(
-      <BlockMarkdownEditor value={'# 标题\n\n> 引用'} onChange={onChange} />,
+      <DocumentEditor value={'# 标题\n\n> 引用'} onChange={onChange} />,
     )
     const handles = screen.getAllByRole('button', { name: '打开块工具' })
     fireEvent.click(handles[0], { ctrlKey: true })
@@ -595,7 +595,7 @@ describe('BlockMarkdownEditor', () => {
   it('批量文字样式应包裹所选块内全文', () => {
     const onChange = vi.fn()
     render(
-      <BlockMarkdownEditor value={'第一段\n\n第二段'} onChange={onChange} />,
+      <DocumentEditor value={'第一段\n\n第二段'} onChange={onChange} />,
     )
     const handles = screen.getAllByRole('button', { name: '打开块工具' })
     fireEvent.click(handles[0], { ctrlKey: true })
@@ -607,7 +607,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('文档只有一个空段落时块工具应禁止删除', () => {
-    render(<BlockMarkdownEditor value="" onChange={vi.fn()} />)
+    render(<DocumentEditor value="" onChange={vi.fn()} />)
 
     fireEvent.click(screen.getByRole('button', { name: '打开块工具' }))
 
@@ -615,7 +615,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('块工具应支持在当前块后插入语义块', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
 
     fireEvent.click(screen.getByRole('button', { name: '打开块工具' }))
     fireEvent.click(screen.getByRole('button', { name: '插入代码块' }))
@@ -624,7 +624,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('Esc 应只关闭当前块工具浮层', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
     fireEvent.click(screen.getByRole('button', { name: '打开块工具' }))
 
     fireEvent.keyDown(document, { key: 'Escape' })
@@ -636,7 +636,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('选中文字应显示文字工具浮层', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
 
     selectText(screen.getByText('正文'))
 
@@ -646,7 +646,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('右键文字时应选中当前词并打开文字工具浮层', () => {
-    render(<BlockMarkdownEditor value="右键测试" onChange={vi.fn()} />)
+    render(<DocumentEditor value="右键测试" onChange={vi.fn()} />)
     const paragraph = screen.getByText('右键测试')
     const textNode = paragraph.firstChild!
     const caret = document.createRange()
@@ -683,7 +683,7 @@ describe('BlockMarkdownEditor', () => {
     render(
       <>
         <button type="button">外部操作</button>
-        <BlockMarkdownEditor value="正文" onChange={vi.fn()} />
+        <DocumentEditor value="正文" onChange={vi.fn()} />
       </>,
     )
     selectText(screen.getByText('正文'))
@@ -697,7 +697,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('点击文字工具选项时不应在执行命令前关闭浮层', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
     selectText(screen.getByText('正文'))
 
     fireEvent.pointerDown(screen.getByRole('button', { name: '加粗' }))
@@ -711,7 +711,7 @@ describe('BlockMarkdownEditor', () => {
     render(
       <>
         <button type="button">外部操作</button>
-        <BlockMarkdownEditor value="正文" onChange={vi.fn()} />
+        <DocumentEditor value="正文" onChange={vi.fn()} />
       </>,
     )
     const outside = screen.getByRole('button', { name: '外部操作' })
@@ -746,7 +746,7 @@ describe('BlockMarkdownEditor', () => {
     ['行内代码', '`正文`'],
   ])('文字工具执行%s后应输出安全格式', (name, markdown) => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="正文" onChange={onChange} />)
+    render(<DocumentEditor value="正文" onChange={onChange} />)
     selectText(screen.getByText('正文'))
 
     fireEvent.mouseDown(screen.getByRole('button', { name }))
@@ -759,7 +759,7 @@ describe('BlockMarkdownEditor', () => {
     const onChange = vi.fn()
     vi.spyOn(window, 'prompt').mockReturnValue('https://example.com/article')
     const { unmount } = render(
-      <BlockMarkdownEditor value="正文" onChange={onChange} />,
+      <DocumentEditor value="正文" onChange={onChange} />,
     )
     selectText(screen.getByText('正文'))
 
@@ -771,7 +771,7 @@ describe('BlockMarkdownEditor', () => {
 
     unmount()
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value="[正文](https://example.com/article)"
         onChange={onChange}
       />,
@@ -786,7 +786,7 @@ describe('BlockMarkdownEditor', () => {
     const onChange = vi.fn()
     vi.spyOn(window, 'prompt').mockReturnValue('javascript:alert(1)')
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined)
-    render(<BlockMarkdownEditor value="正文" onChange={onChange} />)
+    render(<DocumentEditor value="正文" onChange={onChange} />)
     selectText(screen.getByText('正文'))
 
     fireEvent.mouseDown(screen.getByRole('button', { name: '设置链接' }))
@@ -799,7 +799,7 @@ describe('BlockMarkdownEditor', () => {
   it('文字工具应只应用预设文字颜色和背景高亮', () => {
     const onChange = vi.fn()
     const { unmount } = render(
-      <BlockMarkdownEditor value="正文" onChange={onChange} />,
+      <DocumentEditor value="正文" onChange={onChange} />,
     )
     selectText(screen.getByText('正文'))
 
@@ -814,7 +814,7 @@ describe('BlockMarkdownEditor', () => {
     )
 
     unmount()
-    render(<BlockMarkdownEditor value="正文" onChange={onChange} />)
+    render(<DocumentEditor value="正文" onChange={onChange} />)
     selectText(screen.getByText('正文'))
     fireEvent.mouseDown(screen.getByRole('button', { name: '背景高亮' }))
     fireEvent.click(screen.getByRole('button', { name: '背景高亮' }))
@@ -830,7 +830,7 @@ describe('BlockMarkdownEditor', () => {
   it('文字工具应清除当前文字的行内格式', () => {
     const onChange = vi.fn()
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'**<u><span style="color:#dc2626">正文</span></u>**'}
         onChange={onChange}
       />,
@@ -846,7 +846,7 @@ describe('BlockMarkdownEditor', () => {
   it('文字工具应清除跨多个行内节点的格式', () => {
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor value="**粗体** *斜体*" onChange={onChange} />,
+      <DocumentEditor value="**粗体** *斜体*" onChange={onChange} />,
     )
     selectContents(container.querySelector<HTMLElement>('[data-editor-input]')!)
 
@@ -857,7 +857,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('Esc 应关闭文字工具浮层并保留正文', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
     selectText(screen.getByText('正文'))
 
     fireEvent.keyDown(document, { key: 'Escape' })
@@ -872,7 +872,7 @@ describe('BlockMarkdownEditor', () => {
     const { rerender } = render(
       <>
         <span>外部文字</span>
-        <BlockMarkdownEditor value="正文" onChange={vi.fn()} />
+        <DocumentEditor value="正文" onChange={vi.fn()} />
       </>,
     )
     selectText(screen.getByText('外部文字'))
@@ -880,7 +880,7 @@ describe('BlockMarkdownEditor', () => {
       screen.queryByRole('toolbar', { name: '文字工具' }),
     ).not.toBeInTheDocument()
 
-    rerender(<BlockMarkdownEditor value="正文" onChange={vi.fn()} readOnly />)
+    rerender(<DocumentEditor value="正文" onChange={vi.fn()} readOnly />)
     selectText(screen.getByText('正文'))
     expect(
       screen.queryByRole('toolbar', { name: '文字工具' }),
@@ -889,7 +889,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('列表项应支持两级缩进和反向缩进', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value={'- 父项\n- 子项'} onChange={onChange} />)
+    render(<DocumentEditor value={'- 父项\n- 子项'} onChange={onChange} />)
     const child = screen.getByText('子项')
 
     fireEvent.keyDown(child, { key: 'Tab' })
@@ -906,7 +906,7 @@ describe('BlockMarkdownEditor', () => {
   it('Enter 应在当前列表项后创建同级项', () => {
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor value={'- 第一项\n- 第二项'} onChange={onChange} />,
+      <DocumentEditor value={'- 第一项\n- 第二项'} onChange={onChange} />,
     )
 
     fireEvent.keyDown(screen.getByText('第一项'), { key: 'Enter' })
@@ -919,7 +919,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('列表项 Enter 应按光标位置拆分前后文字', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="- 前半段后半段" onChange={onChange} />)
+    render(<DocumentEditor value="- 前半段后半段" onChange={onChange} />)
     const item = screen.getByText('前半段后半段')
     const textNode = item.firstChild!
     const selection = window.getSelection()!
@@ -937,7 +937,7 @@ describe('BlockMarkdownEditor', () => {
   it('空列表项按 Backspace 应退出为段落', () => {
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor value={'- 第一项\n- 临时项'} onChange={onChange} />,
+      <DocumentEditor value={'- 第一项\n- 临时项'} onChange={onChange} />,
     )
     const item = screen.getByText('临时项')
     item.innerHTML = ''
@@ -954,7 +954,7 @@ describe('BlockMarkdownEditor', () => {
   it('空列表项按 Enter 应退出为段落', () => {
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor value={'- 第一项\n- 临时项'} onChange={onChange} />,
+      <DocumentEditor value={'- 第一项\n- 临时项'} onChange={onChange} />,
     )
     const item = screen.getByText('临时项')
     item.innerHTML = ''
@@ -970,7 +970,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('任务列表勾选后应保存完成状态', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="- [ ] 待办" onChange={onChange} />)
+    render(<DocumentEditor value="- [ ] 待办" onChange={onChange} />)
 
     fireEvent.click(screen.getByRole('checkbox', { name: '任务 1' }))
 
@@ -979,7 +979,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('右键表格应显示表格工具浮窗', () => {
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'| A | B |\n| --- | --- |\n| C | D |'}
         onChange={vi.fn()}
       />,
@@ -995,7 +995,7 @@ describe('BlockMarkdownEditor', () => {
     render(
       <>
         <button type="button">外部操作</button>
-        <BlockMarkdownEditor
+        <DocumentEditor
           value={'| A | B |\n| --- | --- |\n| C | D |'}
           onChange={vi.fn()}
         />
@@ -1018,7 +1018,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('Tab 和 Shift + Tab 应在表格单元格间移动焦点', () => {
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'| A | B |\n| --- | --- |\n| C | D |'}
         onChange={vi.fn()}
       />,
@@ -1043,7 +1043,7 @@ describe('BlockMarkdownEditor', () => {
     ['删除当前列', 2, 1],
   ])('表格工具执行%s后应更新表格结构', (action, rows, columns) => {
     const { container } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'| A | B |\n| --- | --- |\n| C | D |'}
         onChange={vi.fn()}
       />,
@@ -1063,7 +1063,7 @@ describe('BlockMarkdownEditor', () => {
   it('连续单元格应支持合并和拆分', () => {
     const onChange = vi.fn()
     const { unmount } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'| A | B |\n| --- | --- |\n| C | D |'}
         onChange={onChange}
       />,
@@ -1081,7 +1081,7 @@ describe('BlockMarkdownEditor', () => {
 
     unmount()
     const { container: splitContainer } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={
           '<table><thead><tr><th colspan="2">A</th></tr></thead><tbody><tr><td>C</td><td>D</td></tr></tbody></table>'
         }
@@ -1099,7 +1099,7 @@ describe('BlockMarkdownEditor', () => {
   it('表格工具应支持表头、对齐和清空内容', () => {
     const onChange = vi.fn()
     const { container, unmount } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'| A | B |\n| --- | --- |\n| C | D |'}
         onChange={onChange}
       />,
@@ -1112,7 +1112,7 @@ describe('BlockMarkdownEditor', () => {
 
     unmount()
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'| A | B |\n| --- | --- |\n| C | D |'}
         onChange={onChange}
       />,
@@ -1130,7 +1130,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('删除表格后应保留可编辑空段落', () => {
     const { container } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'| A | B |\n| --- | --- |\n| C | D |'}
         onChange={vi.fn()}
       />,
@@ -1150,7 +1150,7 @@ describe('BlockMarkdownEditor', () => {
   it('表格边缘加号和列宽拖拽应更新结构化数据', () => {
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'| A | B |\n| --- | --- |\n| C | D |'}
         onChange={onChange}
       />,
@@ -1174,7 +1174,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('粘贴 Markdown 应解析为块并插入当前块后', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="当前段落" onChange={onChange} />)
+    render(<DocumentEditor value="当前段落" onChange={onChange} />)
 
     fireEvent.paste(screen.getByText('当前段落'), {
       clipboardData: {
@@ -1194,7 +1194,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('粘贴纯文本应按空行拆段且保留单换行', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="当前段落" onChange={onChange} />)
+    render(<DocumentEditor value="当前段落" onChange={onChange} />)
 
     fireEvent.paste(screen.getByText('当前段落'), {
       clipboardData: {
@@ -1210,7 +1210,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('粘贴 HTML 应保留安全格式并移除危险内容', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="当前段落" onChange={onChange} />)
+    render(<DocumentEditor value="当前段落" onChange={onChange} />)
 
     fireEvent.paste(screen.getByText('当前段落'), {
       clipboardData: {
@@ -1231,7 +1231,7 @@ describe('BlockMarkdownEditor', () => {
     // When 管理员在正文编辑器中执行粘贴
     // Then 图片不上传也不生成本地地址，编辑器提示使用上传按钮且普通文本仍可正常插入
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="当前段落" onChange={onChange} />)
+    render(<DocumentEditor value="当前段落" onChange={onChange} />)
     const editor = screen.getByText('当前段落')
     const image = new File(['image'], 'pasted.png', { type: 'image/png' })
 
@@ -1262,7 +1262,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('图片加载失败应显示错误占位和原始 URL', () => {
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value="![封面](https://example.com/broken.png)"
         onChange={vi.fn()}
       />,
@@ -1279,7 +1279,7 @@ describe('BlockMarkdownEditor', () => {
   it('图片工具应支持左中右排版并保存设置', () => {
     const onChange = vi.fn()
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value="![封面](https://example.com/a.png)"
         onChange={onChange}
       />,
@@ -1315,7 +1315,7 @@ describe('BlockMarkdownEditor', () => {
     // Given 管理员选中一张正文图片
     const onChange = vi.fn()
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value="![封面](https://example.com/a.png)"
         onChange={onChange}
       />,
@@ -1345,7 +1345,7 @@ describe('BlockMarkdownEditor', () => {
       .mockReturnValue('blob:cursor-image')
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value={'第一段\n\n第二段\n\n第三段'}
         onChange={onChange}
       />,
@@ -1384,7 +1384,7 @@ describe('BlockMarkdownEditor', () => {
     }
     const onDraftRelease = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         imageDrafts={new Map([[previewUrl, draft]])}
         value={`![待保存图片](${previewUrl})`}
         onChange={vi.fn()}
@@ -1413,7 +1413,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('快捷键抽屉默认隐藏且点击后显示', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
 
     expect(
       screen.queryByRole('dialog', { name: '快捷键概览' }),
@@ -1430,7 +1430,7 @@ describe('BlockMarkdownEditor', () => {
   it('编辑器聚焦时 Ctrl + S 应调用保存快捷键并阻止默认行为', () => {
     const onSaveShortcut = vi.fn()
     render(
-      <BlockMarkdownEditor
+      <DocumentEditor
         value="正文"
         onChange={vi.fn()}
         onSaveShortcut={onSaveShortcut}
@@ -1447,7 +1447,7 @@ describe('BlockMarkdownEditor', () => {
 
   it('退格键聚焦在块工具按钮时应保留原生行为，不删除文档块', () => {
     const onChange = vi.fn()
-    render(<BlockMarkdownEditor value="" onChange={onChange} />)
+    render(<DocumentEditor value="" onChange={onChange} />)
 
     const toolbarButton = screen.getByRole('button', { name: '打开块工具' })
     toolbarButton.focus()
@@ -1469,7 +1469,7 @@ describe('BlockMarkdownEditor', () => {
   it('空编辑块中的 Ctrl + Backspace 应保留原生文字编辑行为', () => {
     const onChange = vi.fn()
     const { container } = render(
-      <BlockMarkdownEditor value="" onChange={onChange} />,
+      <DocumentEditor value="" onChange={onChange} />,
     )
     const paragraph = container.querySelector<HTMLElement>(
       '[data-editor-input]',
@@ -1485,7 +1485,7 @@ describe('BlockMarkdownEditor', () => {
   })
 
   it('未配置保存回调时 Ctrl + S 应保留浏览器默认行为', () => {
-    render(<BlockMarkdownEditor value="正文" onChange={vi.fn()} />)
+    render(<DocumentEditor value="正文" onChange={vi.fn()} />)
 
     const allowed = fireEvent.keyDown(screen.getByText('正文'), {
       key: 's',

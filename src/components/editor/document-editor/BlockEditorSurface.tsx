@@ -22,13 +22,13 @@ import { BlockSelectionToolbar } from './toolbars/BlockSelectionToolbar'
 import { ShortcutDrawer } from './toolbars/ShortcutDrawer'
 import { TextToolbar } from './toolbars/TextToolbar'
 import { SelectedImageToolbar } from './toolbars/SelectedImageToolbar'
-import type { BlockMarkdownEditorProps, EditorBlock } from './types'
+import type { DocumentEditorProps, EditorBlock } from './types'
 
 const cx = (...classes: Array<string | false | undefined>) =>
   classes.filter(Boolean).join(' ')
 
 type BlockEditorSurfaceProps = Pick<
-  BlockMarkdownEditorProps,
+  DocumentEditorProps,
   'readOnly' | 'disabled' | 'placeholder' | 'className'
 > & {
   model: BlockEditorModel
