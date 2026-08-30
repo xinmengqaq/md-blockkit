@@ -23,7 +23,7 @@ export default defineConfig({
       entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
       formats: ['es'],
       fileName: 'index',
-      cssFileName: 'doc-editor',
+      cssFileName: 'md-blockkit',
     },
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime'],

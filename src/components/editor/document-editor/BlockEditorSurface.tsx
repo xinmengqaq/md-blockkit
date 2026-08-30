@@ -2,6 +2,9 @@ import { ImageUp, Keyboard, Plus } from 'lucide-react'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 
 import { EditorBlockContent } from './EditorBlockContent'
+import { MarkdownImportControl } from './markdown/MarkdownImportControl'
+import { parseMarkdownToBlocks } from './markdown/parseMarkdown'
+import { serializeBlocksToMarkdown } from './markdown/serializeMarkdown'
 import {
   clearSelectionFormatting,
   removeSelectionLink,
@@ -152,6 +155,13 @@ export const BlockEditorSurface = ({
       ) : null}
       {!readOnly ? (
         <div className="block-editor__utility-bar">
+          <MarkdownImportControl
+            currentContent={serializeBlocksToMarkdown(model.blocks)}
+            disabled={disabled}
+            onImport={(content) =>
+              model.commit(parseMarkdownToBlocks(content))
+            }
+          />
           <button
             aria-label="上传图片"
             disabled={disabled}

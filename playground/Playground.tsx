@@ -45,8 +45,8 @@ export const Playground = () => {
   return (
     <main className="playground">
       <header className="playground__header">
-        <h1>Document Editor</h1>
-        <p>受控文档。图片先变成本地草稿，上传由接入方处理。</p>
+        <h1>md-blockkit</h1>
+        <p>按块编辑。图片先留在本地预览。</p>
       </header>
       <section className="playground__editor">
         <DocumentEditor
@@ -57,10 +57,6 @@ export const Playground = () => {
           placeholder="输入正文"
           value={value}
         />
-      </section>
-      <section className="playground__markdown">
-        <h2>当前 Markdown</h2>
-        <pre>{value}</pre>
       </section>
     </main>
   )

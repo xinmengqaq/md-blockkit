@@ -261,6 +261,10 @@
   justify-content: flex-end;
 }
 
+.ui-confirm-dialog p {
+  margin: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ui-button,
   .ui-button--loading .ui-button__icon svg {

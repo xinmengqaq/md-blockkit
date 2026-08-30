@@ -65,6 +65,28 @@
   width: 16px;
 }
 
+.block-editor__markdown-import {
+  position: relative;
+}
+
+.block-editor__markdown-import-feedback {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  white-space: nowrap;
+}
+
+.block-editor__markdown-import-feedback--success {
+  color: var(--color-success);
+}
+
+.block-editor__markdown-import-feedback--error {
+  color: var(--color-danger);
+}
+
 .block-editor__selection-toolbar {
   align-items: center;
   background: var(--color-surface);

@@ -1,9 +1,9 @@
 {
-  "name": "doc-editor",
+  "name": "md-blockkit",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Embeddable block document editor. Markdown in, Markdown out.",
+  "description": "Embeddable block document editor.",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,7 +12,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/doc-editor.css"
+    "./style.css": "./dist/md-blockkit.css"
   },
   "files": [
     "dist"

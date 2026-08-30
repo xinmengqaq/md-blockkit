@@ -1,8 +1,8 @@
 <div align="center">
 
-# doc-editor
+# md-blockkit
 
-块状文档编辑器 // Markdown 进出
+块状文档编辑器。标题、列表、图片、表格按块来写。
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![React](https://img.shields.io/badge/react-%3E%3D18-61DAFB?logo=react&logoColor=222)](https://react.dev/)
@@ -12,28 +12,26 @@
 
 ## 项目简介
 
-`doc-editor` 是一个可嵌入的 React 文档编辑器。写作时按块操作，对外只交换 Markdown 字符串，方便存进数据库、Git 或任何文本字段。
-
-适合后台、CMS、笔记和内容工具。编辑器不管登录、存储和上传接口，接入方自己接保存与图床。
+`md-blockkit` 是一个可以嵌进 React 页面的文档编辑器。屏幕上按块来写：标题、列表、图片、表格等。
 
 ## 展示
 
 <p align="center">
-  <img src="./img/preview.png" alt="doc-editor 编辑界面" width="100%" />
+  <img src="./img/preview.png" alt="md-blockkit 编辑界面" width="100%" />
 </p>
 
 块工具条、文字格式、表格和图片裁剪都在编辑区内完成。
 
 ## 核心能力
 
-| 模块 | 说明 |
-| --- | --- |
-| 受控文档 | `value` / `onChange` 只走 Markdown，可随时回显原文。 |
-| 块编辑 | 段落、标题、引用、有序/无序/任务列表、代码、图片、表格、分割线。 |
-| 工具条 | 块操作、行内格式、表格、图片对齐与宽度。 |
-| 图片 | 选文件、裁剪、重裁、替换、alt。GIF 保留动画，不裁剪。 |
-| 上传边界 | 编辑器只产出本地 `ImageDraft`，由接入方上传并把预览 URL 换成线上地址。 |
-| 主题 | CSS 变量，可覆盖颜色和圆角。 |
+
+| 模块          | 说明                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| 块类型        | 段落、标题、引用、有序/无序/任务列表、代码、图片、表格、分割线。                                       |
+| 工具条        | 移动、删除、转换块；给文字加格式；改表格和图片。                                                       |
+| 导入 Markdown | 选择`.md` 文件写入当前文档。已有正文时会确认覆盖。图片、Wiki 图和 callout 图按导入规则去掉或转成文字。 |
+| 图片          | 选文件、裁剪、再裁、更换、对齐、宽度、说明文字。GIF 保留动画，不裁剪。                                 |
+| 外观          | CSS 变量，可改颜色和圆角。                                                                             |
 
 当前不支持粘贴或拖入图片。
 
@@ -42,15 +40,15 @@
 包尚未发布到 npm，可从本地目录安装：
 
 ```bash
-npm install file:../doc-editor
+npm install file:../md-blockkit
 ```
 
 需要 `react` 与 `react-dom` `>= 18`。
 
 ```tsx
 import { useState } from 'react'
-import { DocumentEditor } from 'doc-editor'
-import 'doc-editor/style.css'
+import { DocumentEditor } from 'md-blockkit'
+import 'md-blockkit/style.css'
 
 export function App() {
   const [doc, setDoc] = useState('# Hello\n\n开始写正文。')
@@ -61,7 +59,7 @@ export function App() {
 }
 ```
 
-不传图片相关 props 也可以写文字。插入的图片会使用 `blob:` 预览地址，刷新后失效。
+不传图片参数也可以写文字。这时插进去的图只是浏览器临时地址（`blob:`），刷新页面会丢失。
 
 本地调试：
 
@@ -72,7 +70,9 @@ npm run dev
 
 ## 图片
 
-编辑器负责选图、裁剪和预览。接入方负责上传，并把文档里的预览 URL 换成线上地址。
+编辑器负责选图、裁剪，以及在页面里预览。它不会去传文件，也不会在保存文档时顺手处理图片。
+
+插图之后会拿到一份 `ImageDraft`：里面有原文件、裁完的数据，还有写进文档里的预览地址。要不要上传、什么时候上传、传到哪里，都和保存文档分开做。
 
 支持 JPG、JPEG、PNG、WebP、GIF。
 
@@ -82,8 +82,8 @@ import {
   DocumentEditor,
   releaseImageDraft,
   type ImageDraft,
-} from 'doc-editor'
-import 'doc-editor/style.css'
+} from 'md-blockkit'
+import 'md-blockkit/style.css'
 
 export function App() {
   const [doc, setDoc] = useState('')
@@ -91,6 +91,8 @@ export function App() {
 
   const onImageDraftCreate = useCallback((draft: ImageDraft) => {
     setDrafts((current) => new Map(current).set(draft.previewUrl, draft))
+    // 若要把文件存到自己的服务，在这里处理 draft.uploadBlob。
+    // 不要和保存整篇文档捆在一起。
   }, [])
 
   const onImageDraftRelease = useCallback((previewUrl: string) => {
@@ -103,18 +105,6 @@ export function App() {
     })
   }, [])
 
-  const save = async () => {
-    let next = doc
-    for (const draft of drafts.values()) {
-      const url = await upload(draft.uploadBlob)
-      next = next.replaceAll(draft.previewUrl, url)
-      releaseImageDraft(draft)
-    }
-    setDrafts(new Map())
-    setDoc(next)
-    await persist(next)
-  }
-
   return (
     <DocumentEditor
       value={doc}
@@ -122,47 +112,46 @@ export function App() {
       imageDrafts={drafts}
       onImageDraftCreate={onImageDraftCreate}
       onImageDraftRelease={onImageDraftRelease}
-      onSaveShortcut={() => void save()}
     />
   )
 }
-
-async function upload(blob: Blob): Promise<string> {
-  return URL.createObjectURL(blob)
-}
-
-async function persist(_doc: string) {}
 ```
 
-草稿被替换、删除或页面卸载时调用 `releaseImageDraft`，避免泄漏 object URL。
+`imageDrafts` 用来记住本地图，方便重新裁剪。图片被换掉、删掉，或页面关掉时调用 `releaseImageDraft`，否则预览用的 object URL 不会被释放。
+
+如果上传完成后希望文档里写成线上地址，再单独改对应的 `previewUrl`。这不是保存文档的一部分。
 
 `ImageDraft`：
 
-| 字段 | 说明 |
-| --- | --- |
-| `id` | 草稿 id |
-| `originalFile` | 用户选中的原文件 |
-| `uploadBlob` | 待上传内容（裁剪后的静态图，或 GIF 原文件） |
-| `previewUrl` | 插入文档的 object URL |
-| `type` | `'static'` 或 `'gif'` |
-| `alt` | 可选 |
 
-## API
+| 字段           | 说明                        |
+| -------------- | --------------------------- |
+| `id`           | 草稿 id                     |
+| `originalFile` | 选中的原文件                |
+| `uploadBlob`   | 裁完的静态图，或 GIF 原文件 |
+| `previewUrl`   | 写进文档的本地预览地址      |
+| `type`         | `'static'` 或 `'gif'`       |
+| `alt`          | 可选                        |
+
+## 组件怎么用
+
+编辑器不发网络请求。
 
 ### `<DocumentEditor />`
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `value` | `string` | required | 文档 Markdown |
-| `onChange` | `(value: string) => void` | required | 文档变化 |
-| `readOnly` | `boolean` | `false` | 只读 |
-| `disabled` | `boolean` | `false` | 禁用编辑和图片操作 |
-| `placeholder` | `string` | `'输入正文'` | 空文档占位 |
-| `className` | `string` | | 根节点 class |
-| `onSaveShortcut` | `() => void` | | `Ctrl+S` / `Cmd+S` |
-| `imageDrafts` | `ReadonlyMap<string, ImageDraft>` | `new Map()` | 以 `previewUrl` 为 key 的草稿表 |
-| `onImageDraftCreate` | `(draft: ImageDraft) => void` | | 裁剪或确认 GIF 后 |
-| `onImageDraftRelease` | `(previewUrl: string) => void` | | 图片被替换或删除时 |
+
+| Prop                  | Type                              | Default      | Description                       |
+| --------------------- | --------------------------------- | ------------ | --------------------------------- |
+| `readOnly`            | `boolean`                         | `false`      | 只读                              |
+| `disabled`            | `boolean`                         | `false`      | 禁用编辑和图片操作                |
+| `placeholder`         | `string`                          | `'输入正文'` | 空文档时的提示                    |
+| `className`           | `string`                          |              | 根节点 class                      |
+| `onSaveShortcut`      | `() => void`                      |              | 按下`Ctrl+S` / `Cmd+S`            |
+| `imageDrafts`         | `ReadonlyMap<string, ImageDraft>` | `new Map()`  | 本地图片表，用`previewUrl` 当 key |
+| `onImageDraftCreate`  | `(draft: ImageDraft) => void`     |              | 裁完图或确认 GIF 之后             |
+| `onImageDraftRelease` | `(previewUrl: string) => void`    |              | 图片被替换或删除时                |
+
+`onSaveShortcut` 只表示按下了保存快捷键，不会上传图片，也不会替页面写文件。
 
 ### Helpers
 
@@ -173,7 +162,7 @@ releaseImageDraft(draft: ImageDraft): void
 releaseAllImageDrafts(drafts: ImageDraft[]): void
 ```
 
-输入输出是 Markdown（含 GFM 表格）。图片对齐和宽度会写成 HTML：
+表格支持 GFM。图片的对齐和宽度会写成 HTML：
 
 ```html
 <p style="text-align:center"><img src="..." alt="..." style="width:80%"></p>
@@ -183,7 +172,7 @@ releaseAllImageDrafts(drafts: ImageDraft[]): void
 
 ## 主题
 
-引入 `doc-editor/style.css` 后覆盖 CSS 变量：
+引入 `md-blockkit/style.css` 后覆盖 CSS 变量：
 
 ```css
 :root {
@@ -202,18 +191,19 @@ releaseAllImageDrafts(drafts: ImageDraft[]): void
 
 ## 快捷键
 
-| Keys | Action |
-| --- | --- |
-| `Ctrl+S` | `onSaveShortcut` |
-| `Ctrl+Z` / `Ctrl+Shift+Z` / `Ctrl+Y` | 撤销 / 重做 |
-| `Ctrl+B` / `I` / `U` | 加粗 / 斜体 / 下划线 |
-| `Ctrl+Shift+X` | 删除线 |
-| `Ctrl+K` | 链接 |
-| `Alt+↑` / `Alt+↓` | 移动当前块 |
-| `Enter` | 按光标拆分块 |
-| `Shift+Enter` | 块内换行 |
-| `Tab` / `Shift+Tab` | 列表缩进或表格单元格 |
-| `Esc` | 关闭浮层 |
+
+| Keys                                 | Action               |
+| ------------------------------------ | -------------------- |
+| `Ctrl+S`                             | `onSaveShortcut`     |
+| `Ctrl+Z` / `Ctrl+Shift+Z` / `Ctrl+Y` | 撤销 / 重做          |
+| `Ctrl+B` / `I` / `U`                 | 加粗 / 斜体 / 下划线 |
+| `Ctrl+Shift+X`                       | 删除线               |
+| `Ctrl+K`                             | 链接                 |
+| `Alt+↑` / `Alt+↓`                  | 移动当前块           |
+| `Enter`                              | 按光标拆分块         |
+| `Shift+Enter`                        | 块内换行             |
+| `Tab` / `Shift+Tab`                  | 列表缩进或表格单元格 |
+| `Esc`                                | 关闭浮层             |
 
 编辑器内可打开快捷键抽屉查看完整列表。
 
@@ -227,6 +217,25 @@ npm run typecheck
 npm run lint
 npm run build
 ```
+
+## 依赖
+
+运行时用到的第三方库：
+
+
+| 库                                                                                                                                                                                                                                                                                       | 用途                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| [React](https://react.dev/)                                                                                                                                                                                                                                                              | 界面。接入时需要自己安装 React |
+| [unified](https://github.com/unifiedjs/unified) / [remark-parse](https://github.com/remarkjs/remark/tree/main/packages/remark-parse) / [remark-stringify](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify) / [remark-gfm](https://github.com/remarkjs/remark-gfm) | Markdown 解析与序列化          |
+| [DOMPurify](https://github.com/cure53/DOMPurify)                                                                                                                                                                                                                                         | 行内 HTML 净化                 |
+| [react-easy-crop](https://github.com/ValentinH/react-easy-crop)                                                                                                                                                                                                                          | 图片裁剪                       |
+| [@floating-ui/react-dom](https://github.com/floating-ui/floating-ui)                                                                                                                                                                                                                     | 工具条定位                     |
+| [lucide-react](https://lucide.dev/)                                                                                                                                                                                                                                                      | 图标                           |
+| [Prism](https://github.com/PrismJS/prism)                                                                                                                                                                                                                                                | 代码块高亮                     |
+| [react-simple-code-editor](https://github.com/react-simple-code-editor/react-simple-code-editor)                                                                                                                                                                                         | 代码块编辑                     |
+| [GSAP](https://github.com/greensock/GSAP) / [@gsap/react](https://github.com/greensock/react)                                                                                                                                                                                            | 弹层与提示动画                 |
+
+开发构建另用 Vite、TypeScript、Vitest、ESLint、Prettier。
 
 ## 许可证
 
