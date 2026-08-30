@@ -1,36 +1,51 @@
+<div align="center">
+
 # doc-editor
 
-React 块状文档编辑器。编辑时按块操作，存盘时是 Markdown 字符串。
+块状文档编辑器 // Markdown 进出
 
-适合嵌进后台、CMS、笔记，或任何需要「所见即所得 + Markdown 存储」的 React 应用。
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![React](https://img.shields.io/badge/react-%3E%3D18-61DAFB?logo=react&logoColor=222)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/typescript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-## Features
+</div>
 
-- 受控组件：`value` / `onChange` 只交换 Markdown
-- 块类型：段落、标题、引用、有序/无序/任务列表、代码、图片、表格、分割线
-- 悬浮工具条：块操作、文字格式、表格、图片
-- 图片：选文件、裁剪、重裁、替换、对齐、宽度、alt；GIF 保留动画、不裁剪
-- 不内置上传：编辑器只产出本地 `ImageDraft`，由接入方上传并替换 URL
-- 主题：CSS 变量，可覆盖
+## 项目简介
+
+`doc-editor` 是一个可嵌入的 React 文档编辑器。写作时按块操作，对外只交换 Markdown 字符串，方便存进数据库、Git 或任何文本字段。
+
+适合后台、CMS、笔记和内容工具。编辑器不管登录、存储和上传接口，接入方自己接保存与图床。
+
+## 展示
+
+<p align="center">
+  <img src="./img/preview.png" alt="doc-editor 编辑界面" width="100%" />
+</p>
+
+块工具条、文字格式、表格和图片裁剪都在编辑区内完成。
+
+## 核心能力
+
+| 模块 | 说明 |
+| --- | --- |
+| 受控文档 | `value` / `onChange` 只走 Markdown，可随时回显原文。 |
+| 块编辑 | 段落、标题、引用、有序/无序/任务列表、代码、图片、表格、分割线。 |
+| 工具条 | 块操作、行内格式、表格、图片对齐与宽度。 |
+| 图片 | 选文件、裁剪、重裁、替换、alt。GIF 保留动画，不裁剪。 |
+| 上传边界 | 编辑器只产出本地 `ImageDraft`，由接入方上传并把预览 URL 换成线上地址。 |
+| 主题 | CSS 变量，可覆盖颜色和圆角。 |
 
 当前不支持粘贴或拖入图片。
 
-## Install
+## 快速开始
 
-包尚未发布到 npm。本地接入：
+包尚未发布到 npm，可从本地目录安装：
 
 ```bash
 npm install file:../doc-editor
 ```
 
-Peer dependency：`react` 与 `react-dom` `>= 18`。
-
-```tsx
-import { DocumentEditor } from 'doc-editor'
-import 'doc-editor/style.css'
-```
-
-## Quick start
+需要 `react` 与 `react-dom` `>= 18`。
 
 ```tsx
 import { useState } from 'react'
@@ -41,22 +56,25 @@ export function App() {
   const [doc, setDoc] = useState('# Hello\n\n开始写正文。')
 
   return (
-    <DocumentEditor
-      value={doc}
-      onChange={setDoc}
-      placeholder="输入正文"
-    />
+    <DocumentEditor value={doc} onChange={setDoc} placeholder="输入正文" />
   )
 }
 ```
 
 不传图片相关 props 也可以写文字。插入的图片会使用 `blob:` 预览地址，刷新后失效。
 
-## Images
+本地调试：
 
-编辑器负责选图、裁剪和预览。接入方负责上传和把预览 URL 换成线上地址。
+```bash
+npm install
+npm run dev
+```
 
-支持格式：JPG、JPEG、PNG、WebP、GIF。静态图走裁剪；GIF 只确认原文件。
+## 图片
+
+编辑器负责选图、裁剪和预览。接入方负责上传，并把文档里的预览 URL 换成线上地址。
+
+支持 JPG、JPEG、PNG、WebP、GIF。
 
 ```tsx
 import { useCallback, useState } from 'react'
@@ -98,29 +116,25 @@ export function App() {
   }
 
   return (
-    <>
-      <DocumentEditor
-        value={doc}
-        onChange={setDoc}
-        imageDrafts={drafts}
-        onImageDraftCreate={onImageDraftCreate}
-        onImageDraftRelease={onImageDraftRelease}
-        onSaveShortcut={() => void save()}
-      />
-      <button type="button" onClick={() => void save()}>
-        保存
-      </button>
-    </>
+    <DocumentEditor
+      value={doc}
+      onChange={setDoc}
+      imageDrafts={drafts}
+      onImageDraftCreate={onImageDraftCreate}
+      onImageDraftRelease={onImageDraftRelease}
+      onSaveShortcut={() => void save()}
+    />
   )
 }
 
 async function upload(blob: Blob): Promise<string> {
-  // 换成自己的上传实现
   return URL.createObjectURL(blob)
 }
 
 async function persist(_doc: string) {}
 ```
+
+草稿被替换、删除或页面卸载时调用 `releaseImageDraft`，避免泄漏 object URL。
 
 `ImageDraft`：
 
@@ -132,8 +146,6 @@ async function persist(_doc: string) {}
 | `previewUrl` | 插入文档的 object URL |
 | `type` | `'static'` 或 `'gif'` |
 | `alt` | 可选 |
-
-记得在草稿被替换、删除或页面卸载时调用 `releaseImageDraft`，避免泄漏 object URL。
 
 ## API
 
@@ -161,19 +173,17 @@ releaseImageDraft(draft: ImageDraft): void
 releaseAllImageDrafts(drafts: ImageDraft[]): void
 ```
 
-## Markdown
-
-输入输出是 Markdown（含 GFM 表格）。图片对齐和宽度序列化成 HTML：
+输入输出是 Markdown（含 GFM 表格）。图片对齐和宽度会写成 HTML：
 
 ```html
 <p style="text-align:center"><img src="..." alt="..." style="width:80%"></p>
 ```
 
-行内格式：加粗、斜体、下划线、删除线、链接、受限的文字色/背景色。HTML 会按白名单净化。
+行内支持加粗、斜体、下划线、删除线、链接，以及白名单内的文字色 / 背景色。
 
-## Theming
+## 主题
 
-引入 `doc-editor/style.css` 后，覆盖 CSS 变量即可：
+引入 `doc-editor/style.css` 后覆盖 CSS 变量：
 
 ```css
 :root {
@@ -188,9 +198,9 @@ releaseAllImageDrafts(drafts: ImageDraft[]): void
 }
 ```
 
-完整变量见 `src/styles/variables.css`。
+完整变量见 [`src/styles/variables.css`](./src/styles/variables.css)。
 
-## Keyboard shortcuts
+## 快捷键
 
 | Keys | Action |
 | --- | --- |
@@ -207,7 +217,7 @@ releaseAllImageDrafts(drafts: ImageDraft[]): void
 
 编辑器内可打开快捷键抽屉查看完整列表。
 
-## Development
+## 开发
 
 ```bash
 npm install
@@ -218,8 +228,6 @@ npm run lint
 npm run build
 ```
 
-Playground 在仓库根目录，用来单独调试编辑器和图片裁剪。
-
-## License
+## 许可证
 
 [MIT](./LICENSE)
