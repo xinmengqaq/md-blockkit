@@ -505,7 +505,7 @@
 }
 
 .block-editor__list {
-  display: grid;
+  display: block;
   gap: 4px;
   margin: 4px 0;
   padding-left: 24px;
@@ -533,7 +533,7 @@
 }
 
 .block-editor__list .block-editor__editable {
-  display: inline-block;
+  display: inline;
   min-width: 40px;
 }
 

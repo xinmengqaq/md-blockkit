@@ -227,7 +227,10 @@ export const useBlockEditorModel = (
 
   const convertToolbarBlock = useCallback(
     (blockId: string, choice: BlockInsertChoice) => {
-      let next = convertBlockType(blocksRef.current, blockId, choice.type)
+      const current = blocksRef.current.find((block) => block.id === blockId)
+      // 再次选择当前列表类型时切回普通段落。
+      const nextType = current?.type === choice.type ? 'paragraph' : choice.type
+      let next = convertBlockType(blocksRef.current, blockId, nextType)
       if (choice.type === 'heading' && choice.level) {
         next = updateBlock(next, blockId, { level: choice.level })
       }

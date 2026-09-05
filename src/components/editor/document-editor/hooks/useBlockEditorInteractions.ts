@@ -138,6 +138,17 @@ export const useBlockEditorInteractions = (
       return
     }
     const target = event.target as HTMLElement
+    const selection = window.getSelection()
+    const editorInput = target.closest<HTMLElement>('[data-editor-input]')
+    // 有行内选区时交给浏览器粘贴回当前块；只有没有选区时才按块解析纯文本。
+    if (
+      editorInput &&
+      selection &&
+      !selection.isCollapsed &&
+      editorInput.contains(selection.anchorNode)
+    ) {
+      return
+    }
     const blockId =
       target.closest<HTMLElement>('[data-block-id]')?.dataset.blockId
     if (!blockId) return
@@ -229,6 +240,18 @@ export const useBlockEditorInteractions = (
       return
     }
     const target = event.target as HTMLElement
+    if (
+      model.selectedBlockIds.length &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      !event.shiftKey &&
+      (event.key === 'Backspace' || event.key === 'Delete')
+    ) {
+      event.preventDefault()
+      model.deleteSelectedBlocks()
+      return
+    }
     const editorInput = target.closest<HTMLElement>('[data-editor-input]')
     const modifier = event.ctrlKey || event.metaKey
     const key = event.key.toLowerCase()

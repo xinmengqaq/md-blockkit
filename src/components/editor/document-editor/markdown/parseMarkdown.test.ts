@@ -81,4 +81,31 @@ const value = 1
     // Then 对齐和百分比宽度都应保留
     expect(image).toMatchObject({ type: 'image', align: 'center', width: 75 })
   })
+
+  it('带 blob 地址的图片在回读时应保留地址', () => {
+    const [image] = parseMarkdownToBlocks(
+      '<p style="text-align:left"><img src="blob:preview" alt="封面" style="width:75%"></p>',
+    )
+    expect(image).toMatchObject({
+      type: 'image',
+      url: 'blob:preview',
+      width: 75,
+    })
+  })
+
+  it('带 data 图片地址在回读时应保留地址', () => {
+    const url =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+    const [image] = parseMarkdownToBlocks(
+      `<p style="text-align:left"><img src="${url}" alt="封面" style="width:75%"></p>`,
+    )
+    expect(image).toMatchObject({ type: 'image', url, width: 75 })
+  })
+
+  it('默认左对齐样式被移除时仍应解析图片和宽度', () => {
+    const [image] = parseMarkdownToBlocks(
+      '<p><img src="https://example.com/a.png" alt="封面" style="width:75%"></p>',
+    )
+    expect(image).toMatchObject({ type: 'image', align: 'left', width: 75 })
+  })
 })

@@ -1192,6 +1192,22 @@ describe('DocumentEditor', () => {
     )
   })
 
+  it('复制得到的纯文本 Markdown 源码应按 Markdown 解析', () => {
+    const onChange = vi.fn()
+    render(<DocumentEditor value="当前段落" onChange={onChange} />)
+
+    fireEvent.paste(screen.getByText('当前段落'), {
+      clipboardData: {
+        types: ['text/plain'],
+        getData: () => '## 粘贴标题\n\n- 列表项',
+      },
+    })
+
+    expect(screen.getByRole('heading', { name: '粘贴标题' })).toBeInTheDocument()
+    expect(screen.getByText('列表项')).toBeInTheDocument()
+    expect(onChange).toHaveBeenLastCalledWith('当前段落\n\n## 粘贴标题\n\n- 列表项')
+  })
+
   it('粘贴纯文本应按空行拆段且保留单换行', () => {
     const onChange = vi.fn()
     render(<DocumentEditor value="当前段落" onChange={onChange} />)

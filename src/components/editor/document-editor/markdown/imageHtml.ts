@@ -6,6 +6,9 @@ const alignments = new Set<TextAlign>(['left', 'center', 'right'])
 const imageHtmlConfig = {
   ALLOWED_TAGS: ['p', 'img'],
   ALLOWED_ATTR: ['style', 'src', 'alt'],
+  // 裁剪上传在宿主应用管理期间使用 blob 地址；图片缩放序列化时必须保留该地址，避免持久化后无法渲染。
+  ALLOWED_URI_REGEXP:
+    /^(?:(?:(?:https?|mailto|ftp|tel|callto|sms|cid|xmpp|blob):|data:image\/|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$)))/i,
 }
 
 export type AlignedImageHtml = {
@@ -33,8 +36,9 @@ export const parseAlignedImageHtml = (
   const alignment = paragraph
     .getAttribute('style')
     ?.match(/(?:^|;)\s*text-align\s*:\s*(left|center|right)\s*(?:;|$)/i)?.[1]
-  const align = alignment?.toLowerCase() as TextAlign | undefined
-  if (!align || !alignments.has(align)) return null
+  // 宿主清理器可能移除默认左对齐样式，缺省时按左对齐回读，确保图片仍可渲染。
+  const align = (alignment?.toLowerCase() ?? 'left') as TextAlign
+  if (!alignments.has(align)) return null
   const widthValue = image
     .getAttribute('style')
     ?.match(/(?:^|;)\s*width\s*:\s*(100|[1-9]?\d)%\s*(?:;|$)/i)?.[1]

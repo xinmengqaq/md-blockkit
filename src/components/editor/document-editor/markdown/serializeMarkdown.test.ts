@@ -118,4 +118,18 @@ const value = 1
       '<p style="text-align:right"><img src="https://example.com/a.png" alt="封面" style="width:75%"></p>',
     )
   })
+
+  it('本地 blob 图片调整宽度后序列化不应丢失 src', () => {
+    const markdown = serializeBlocksToMarkdown([
+      {
+        id: 'image',
+        type: 'image',
+        url: 'blob:preview',
+        alt: '本地',
+        align: 'left',
+        width: 75,
+      },
+    ])
+    expect(markdown).toContain('src="blob:preview"')
+  })
 })

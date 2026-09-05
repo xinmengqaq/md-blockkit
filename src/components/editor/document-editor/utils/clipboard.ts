@@ -117,6 +117,9 @@ const plainTextToBlocks = (text: string): EditorBlock[] =>
       html: paragraph.split(/\r?\n/).map(escapeHtml).join('<br>'),
     }))
 
+const looksLikeMarkdown = (text: string) =>
+  /(^|\n)\s*(?:#{1,4}\s|[-*+]\s|\d+[.)]\s|>\s|```|!\[[^\]]*\]\(|\|[^\n]+\|)/.test(text)
+
 export const getClipboardBlocks = (clipboard: ClipboardSource) => {
   const types = Array.from(clipboard.types)
   if (types.includes('text/markdown')) {
@@ -128,5 +131,6 @@ export const getClipboardBlocks = (clipboard: ClipboardSource) => {
     if (markdown) return parseMarkdownToBlocks(markdown)
   }
   const text = clipboard.getData('text/plain')
+  if (text.trim() && looksLikeMarkdown(text)) return parseMarkdownToBlocks(text)
   return text.trim() ? plainTextToBlocks(text) : []
 }
