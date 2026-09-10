@@ -1,8 +1,9 @@
 import DOMPurify from 'dompurify'
 
-import { createParagraphBlock } from '@/model/blockModel'
+import { sanitizeAuthorHtml } from '@/html/authorHtml'
+import { inlineHtmlNodeToMarkdown } from '@/html/inlineMarkdown'
 import { parseMarkdownToBlocks } from '@/markdown/parseMarkdown'
-import { sanitizeEditorHtml } from '@/markdown/sanitizeHtml'
+import { createParagraphBlock } from '@/model/blockModel'
 import type { EditorBlock } from '@/model/types'
 
 type ClipboardSource = Pick<DataTransfer, 'getData' | 'types'>
@@ -13,35 +14,6 @@ const escapeHtml = (value: string) =>
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
-
-const inlineHtmlToMarkdown = (node: Node): string => {
-  if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? ''
-  if (!(node instanceof HTMLElement)) return ''
-  const content = Array.from(node.childNodes).map(inlineHtmlToMarkdown).join('')
-  switch (node.tagName.toLowerCase()) {
-    case 'strong':
-    case 'b':
-      return `**${content}**`
-    case 'em':
-    case 'i':
-      return `*${content}*`
-    case 'u':
-      return `<u>${content}</u>`
-    case 's':
-    case 'del':
-      return `~~${content}~~`
-    case 'code':
-      return `\`${content}\``
-    case 'a':
-      return `[${content}](${node.getAttribute('href') ?? ''})`
-    case 'br':
-      return '  \n'
-    case 'span':
-      return sanitizeEditorHtml(node.outerHTML)
-    default:
-      return content
-  }
-}
 
 const htmlToMarkdown = (html: string) => {
   const clean = DOMPurify.sanitize(html, {
@@ -82,12 +54,12 @@ const htmlToMarkdown = (html: string) => {
   const document = new DOMParser().parseFromString(clean, 'text/html')
   const blockToMarkdown = (element: Element): string => {
     const tag = element.tagName.toLowerCase()
-    if (tag === 'table') return sanitizeEditorHtml(element.outerHTML)
+    if (tag === 'table') return sanitizeAuthorHtml(element.outerHTML)
     if (/^h[1-4]$/.test(tag)) {
-      return `${'#'.repeat(Number(tag[1]))} ${inlineHtmlToMarkdown(element)}`
+      return `${'#'.repeat(Number(tag[1]))} ${inlineHtmlNodeToMarkdown(element)}`
     }
     if (tag === 'blockquote') {
-      return inlineHtmlToMarkdown(element)
+      return inlineHtmlNodeToMarkdown(element)
         .split('\n')
         .map((line) => `> ${line}`)
         .join('\n')
@@ -98,11 +70,11 @@ const htmlToMarkdown = (html: string) => {
         .filter((child) => child.tagName.toLowerCase() === 'li')
         .map(
           (child, index) =>
-            `${tag === 'ol' ? `${index + 1}.` : '-'} ${inlineHtmlToMarkdown(child)}`,
+            `${tag === 'ol' ? `${index + 1}.` : '-'} ${inlineHtmlNodeToMarkdown(child)}`,
         )
         .join('\n')
     }
-    return inlineHtmlToMarkdown(element)
+    return inlineHtmlNodeToMarkdown(element)
   }
   return Array.from(document.body.children).map(blockToMarkdown).join('\n\n')
 }
@@ -118,7 +90,9 @@ const plainTextToBlocks = (text: string): EditorBlock[] =>
     }))
 
 const looksLikeMarkdown = (text: string) =>
-  /(^|\n)\s*(?:#{1,4}\s|[-*+]\s|\d+[.)]\s|>\s|```|!\[[^\]]*\]\(|\|[^\n]+\|)/.test(text)
+  /(^|\n)\s*(?:#{1,4}\s|[-*+]\s|\d+[.)]\s|>\s|```|!\[[^\]]*\]\(|\|[^\n]+\|)/.test(
+    text,
+  )
 
 export const getClipboardBlocks = (clipboard: ClipboardSource) => {
   const types = Array.from(clipboard.types)

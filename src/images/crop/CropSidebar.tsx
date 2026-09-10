@@ -88,9 +88,7 @@ export const CropSidebar = ({
         className="image-crop-dialog__preview image-crop-dialog__preview--content"
         style={{ aspectRatio: aspect }}
       >
-        {previewSource ? (
-          <img src={previewSource} alt="裁剪结果预览" />
-        ) : null}
+        {previewSource ? <img src={previewSource} alt="裁剪结果预览" /> : null}
       </div>
       {error ? <p className="image-crop-dialog__error">{error}</p> : null}
     </div>

@@ -4,7 +4,7 @@ import { useBlockEditorInteractions } from './input/useBlockEditorInteractions'
 import { useEditorImageUpload } from './session/useEditorImageUpload'
 import { useBlockEditorModel } from './session/useBlockEditorModel'
 import type { DocumentEditorProps } from './types'
-import './styles/documentEditor.css'
+import './styles/index.css'
 
 export const DocumentEditor = ({
   value,

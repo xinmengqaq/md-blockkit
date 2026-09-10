@@ -1,6 +1,6 @@
-import { convertBlockType } from './commands'
-import { ensureNonEmptyDocument } from './blockModel'
-import type { EditorBlock } from './types'
+import type { EditorBlock } from '@/model/types'
+import { ensureNonEmptyDocument } from '@/model/predicates'
+import { convertBlockType } from './document'
 
 export type BulkInlineFormat = 'strong' | 'em' | 'u' | 'del' | 'code'
 

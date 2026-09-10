@@ -1,48 +1,11 @@
-import type { EditorBlock, TableBlock, TextAlign } from '@/model/types'
+import { sanitizeAuthorHtml } from '@/html/authorHtml'
+import { inlineHtmlToMarkdown } from '@/html/inlineMarkdown'
 import { getTableDimensions } from '@/model/commands'
+import type { EditorBlock, TableBlock, TextAlign } from '@/model/types'
 import { serializeAlignedImageHtml } from './imageHtml'
-import { sanitizeEditorHtml } from './sanitizeHtml'
 
 const escapeMarkdownText = (value: string) => value.replaceAll('|', '\\|')
-
-const htmlNodeToMarkdown = (node: Node): string => {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent ?? ''
-  }
-  if (!(node instanceof HTMLElement)) {
-    return ''
-  }
-
-  const content = Array.from(node.childNodes).map(htmlNodeToMarkdown).join('')
-  switch (node.tagName.toLowerCase()) {
-    case 'strong':
-    case 'b':
-      return `**${content}**`
-    case 'em':
-    case 'i':
-      return `*${content}*`
-    case 'u':
-      return `<u>${content}</u>`
-    case 's':
-    case 'del':
-      return `~~${content}~~`
-    case 'code':
-      return `\`${content}\``
-    case 'a':
-      return `[${content}](${node.getAttribute('href') ?? ''})`
-    case 'br':
-      return '  \n'
-    case 'span':
-      return sanitizeEditorHtml(node.outerHTML)
-    default:
-      return content
-  }
-}
-
-const htmlToMarkdown = (html: string) => {
-  const document = new DOMParser().parseFromString(html, 'text/html')
-  return Array.from(document.body.childNodes).map(htmlNodeToMarkdown).join('')
-}
+const htmlToMarkdown = inlineHtmlToMarkdown
 
 const alignMarker = (align: TextAlign) => {
   if (align === 'center') return ':---:'
@@ -103,7 +66,7 @@ const serializeHtmlTable = (table: TableBlock) => {
       ? `<thead>${rowHtml(table.rows[0], 'th')}</thead>`
       : ''
   const bodyRows = table.hasHeader ? table.rows.slice(1) : table.rows
-  return sanitizeEditorHtml(
+  return sanitizeAuthorHtml(
     `<table>${colgroup}${header}<tbody>${bodyRows
       .map((row) => rowHtml(row, 'td'))
       .join('')}</tbody></table>`,

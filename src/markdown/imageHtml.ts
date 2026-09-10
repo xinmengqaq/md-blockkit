@@ -8,7 +8,7 @@ const imageHtmlConfig = {
   ALLOWED_ATTR: ['style', 'src', 'alt'],
   // 裁剪上传在宿主应用管理期间使用 blob 地址；图片缩放序列化时必须保留该地址，避免持久化后无法渲染。
   ALLOWED_URI_REGEXP:
-    /^(?:(?:(?:https?|mailto|ftp|tel|callto|sms|cid|xmpp|blob):|data:image\/|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$)))/i,
+    /^(?:(?:(?:https?|mailto|ftp|tel|callto|sms|cid|xmpp|blob):|data:image\/|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$)))/i,
 }
 
 export type AlignedImageHtml = {

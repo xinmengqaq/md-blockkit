@@ -2,30 +2,24 @@ import {
   type KeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   memo,
-  useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import { Plus } from 'lucide-react'
 
 import {
-  clearTableCells,
-  deleteTableColumn,
-  deleteTableRow,
-  getRectangularTableSelection,
   getTableCellAreas,
   getTableDimensions,
   insertTableColumn,
   insertTableRow,
-  mergeTableCells,
   setTableCellsAlignment,
-  setTableColumnWidth,
-  splitTableCell,
 } from '@/model/commands'
-import { TableToolbar } from '../chrome/TableToolbar'
 import type { TableBlock as TableBlockType, TextAlign } from '@/model/types'
-import { preserveEditorCaretAfterUpdate } from '../input/dom'
+import { TableToolbar } from '../../chrome/TableToolbar'
+import { preserveEditorCaretAfterUpdate } from '../../input/dom'
+import { useTableColumnResize } from './useTableColumnResize'
+import { useTableMenu } from './useTableMenu'
+import { useTableSelection } from './useTableSelection'
 
 type TableBlockProps = {
   block: TableBlockType
@@ -35,12 +29,6 @@ type TableBlockProps = {
   onKeyDown: (event: KeyboardEvent<HTMLElement>) => void
 }
 
-type ColumnDrag = {
-  column: number
-  startX: number
-  startWidth: number
-}
-
 const TableBlockComponent = ({
   block,
   readOnly,
@@ -48,13 +36,27 @@ const TableBlockComponent = ({
   onDelete,
   onKeyDown,
 }: TableBlockProps) => {
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [anchorId, setAnchorId] = useState<string | null>(null)
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [columnDrag, setColumnDrag] = useState<ColumnDrag | null>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const composingCellRef = useRef<string | null>(null)
+  const selection = useTableSelection(block)
+  const { setColumnDrag } = useTableColumnResize(block, onChange)
+  const areas = useMemo(() => getTableCellAreas(block), [block])
+  const dimensions = useMemo(() => getTableDimensions(block), [block])
+  const activeArea =
+    areas.find((area) => area.cell.id === selection.activeId) ?? areas[0]
+  const activeCell = activeArea?.cell
+  const menu = useTableMenu({
+    block,
+    activeRow: activeArea?.row,
+    activeColumn: activeArea?.column,
+    activeCellId: activeArea?.cell.id,
+    selectedIds: selection.selectedIds,
+    setSelectedIds: selection.setSelectedIds,
+    setActiveId: selection.setActiveId,
+    onChange,
+    onDelete,
+  })
+
   const commitCell = (cellId: string, editable: HTMLElement) =>
     preserveEditorCaretAfterUpdate(editable, () =>
       onChange({
@@ -68,133 +70,6 @@ const TableBlockComponent = ({
         ),
       }),
     )
-  const areas = useMemo(() => getTableCellAreas(block), [block])
-  const dimensions = useMemo(() => getTableDimensions(block), [block])
-  const activeArea = areas.find((area) => area.cell.id === activeId) ?? areas[0]
-  const activeCell = activeArea?.cell
-
-  useEffect(() => {
-    if (!columnDrag) return
-    const onMouseMove = (event: globalThis.MouseEvent) => {
-      onChange(
-        setTableColumnWidth(
-          block,
-          columnDrag.column,
-          columnDrag.startWidth + event.clientX - columnDrag.startX,
-        ),
-      )
-    }
-    const onMouseUp = () => setColumnDrag(null)
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    }
-  }, [block, columnDrag, onChange])
-
-  useEffect(() => {
-    if (!menuOpen) return
-
-    const closeMenuOnOutsidePointerDown = (event: PointerEvent) => {
-      const target = event.target
-      if (!(target instanceof Element)) return
-      if (target.closest('.block-editor__table-menu')) return
-      setMenuOpen(false)
-    }
-    const closeMenuOnEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      event.preventDefault()
-      event.stopPropagation()
-      setMenuOpen(false)
-    }
-    document.addEventListener(
-      'pointerdown',
-      closeMenuOnOutsidePointerDown,
-      true,
-    )
-    document.addEventListener('keydown', closeMenuOnEscape, true)
-    return () => {
-      document.removeEventListener(
-        'pointerdown',
-        closeMenuOnOutsidePointerDown,
-        true,
-      )
-      document.removeEventListener('keydown', closeMenuOnEscape, true)
-    }
-  }, [menuOpen])
-
-  const selectCell = (cellId: string, extend: boolean, openMenu = false) => {
-    const next =
-      extend && anchorId
-        ? getRectangularTableSelection(block, anchorId, cellId)
-        : [cellId]
-    setSelectedIds(next)
-    setAnchorId((current) => (extend && current ? current : cellId))
-    setActiveId(cellId)
-    setMenuOpen(openMenu)
-  }
-
-  const closeMenu = () => setMenuOpen(false)
-
-  const updateAndClose = (next: TableBlockType) => {
-    onChange(next)
-    closeMenu()
-  }
-
-  const runAction = (
-    action:
-      | 'insert-row-before'
-      | 'insert-row-after'
-      | 'insert-column-before'
-      | 'insert-column-after'
-      | 'delete-row'
-      | 'delete-column'
-      | 'merge'
-      | 'split'
-      | 'clear'
-      | 'delete-table',
-  ) => {
-    if (!activeArea) return
-    switch (action) {
-      case 'insert-row-before':
-        updateAndClose(insertTableRow(block, activeArea.row, 'before'))
-        break
-      case 'insert-row-after':
-        updateAndClose(insertTableRow(block, activeArea.row, 'after'))
-        break
-      case 'insert-column-before':
-        updateAndClose(insertTableColumn(block, activeArea.column, 'before'))
-        break
-      case 'insert-column-after':
-        updateAndClose(insertTableColumn(block, activeArea.column, 'after'))
-        break
-      case 'delete-row':
-        updateAndClose(deleteTableRow(block, activeArea.row))
-        break
-      case 'delete-column':
-        updateAndClose(deleteTableColumn(block, activeArea.column))
-        break
-      case 'merge': {
-        const next = mergeTableCells(block, selectedIds)
-        const firstId = selectedIds[0]
-        setSelectedIds(firstId ? [firstId] : [])
-        setActiveId(firstId ?? null)
-        updateAndClose(next)
-        break
-      }
-      case 'split':
-        updateAndClose(splitTableCell(block, activeArea.cell.id))
-        break
-      case 'clear':
-        updateAndClose(clearTableCells(block, selectedIds))
-        break
-      case 'delete-table':
-        closeMenu()
-        onDelete()
-        break
-    }
-  }
 
   const handleCellKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.nativeEvent.isComposing) {
@@ -234,17 +109,13 @@ const TableBlockComponent = ({
 
   const handleContextMenu = (event: ReactMouseEvent, cellId: string) => {
     event.preventDefault()
-    if (selectedIds.includes(cellId)) {
-      setActiveId(cellId)
-      setMenuOpen(true)
+    if (selection.selectedIds.includes(cellId)) {
+      selection.setActiveId(cellId)
+      menu.setMenuOpen(true)
       return
     }
-    selectCell(cellId, event.shiftKey, true)
-  }
-
-  const setAlignment = (alignment: TextAlign) => {
-    onChange(setTableCellsAlignment(block, selectedIds, alignment))
-    closeMenu()
+    selection.selectCell(cellId, event.shiftKey, true)
+    menu.setMenuOpen(true)
   }
 
   return (
@@ -268,7 +139,7 @@ const TableBlockComponent = ({
                     <Cell
                       key={cell.id}
                       className={
-                        selectedIds.includes(cell.id)
+                        selection.selectedIds.includes(cell.id)
                           ? 'is-selected'
                           : undefined
                       }
@@ -276,7 +147,8 @@ const TableBlockComponent = ({
                       rowSpan={cell.rowspan}
                       style={{ textAlign: cell.align }}
                       onClick={(event) =>
-                        !readOnly && selectCell(cell.id, event.shiftKey)
+                        !readOnly &&
+                        selection.selectCell(cell.id, event.shiftKey)
                       }
                       onContextMenu={(event) =>
                         !readOnly && handleContextMenu(event, cell.id)
@@ -379,17 +251,26 @@ const TableBlockComponent = ({
               />
             ))}
           </div>
-          {menuOpen && activeCell ? (
+          {menu.menuOpen && activeCell ? (
             <TableToolbar
               alignment={activeCell.align}
-              canMerge={selectedIds.length > 1}
+              canMerge={selection.selectedIds.length > 1}
               canSplit={activeCell.rowspan > 1 || activeCell.colspan > 1}
               hasHeader={block.hasHeader}
-              onAction={runAction}
-              onAlignment={setAlignment}
+              onAction={menu.runAction}
+              onAlignment={(alignment: TextAlign) => {
+                onChange(
+                  setTableCellsAlignment(
+                    block,
+                    selection.selectedIds,
+                    alignment,
+                  ),
+                )
+                menu.closeMenu()
+              }}
               onToggleHeader={() => {
                 onChange({ ...block, hasHeader: !block.hasHeader })
-                closeMenu()
+                menu.closeMenu()
               }}
             />
           ) : null}

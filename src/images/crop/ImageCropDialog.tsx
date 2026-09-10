@@ -1,24 +1,13 @@
 import { Check } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import Cropper, { type Area, type MediaSize, type Point } from 'react-easy-crop'
+import Cropper from 'react-easy-crop'
 import 'react-easy-crop/react-easy-crop.css'
 
-import { Button, Modal } from '@/ui'
 import type { ImageDraft } from '@/images/types'
-import { createImageDraft } from '@/images/drafts'
-
-import { createCroppedImageBlob } from './cropImage'
-import {
-  clamp,
-  CONTENT_CROP,
-  DEFAULT_CONTENT_ASPECT,
-  formatFileSize,
-  getOutputType,
-  MAX_CONTENT_ASPECT,
-  MIN_CONTENT_ASPECT,
-} from './cropConfig'
+import { Button, Modal } from '@/ui'
+import { CONTENT_CROP, formatFileSize } from './cropConfig'
 import { CropCloseConfirm } from './CropCloseConfirm'
 import { CropSidebar } from './CropSidebar'
+import { useImageCropSession } from './useImageCropSession'
 import './imageCropDialog.css'
 
 type ImageCropDialogProps = {
@@ -28,197 +17,41 @@ type ImageCropDialogProps = {
   onApply: (draft: ImageDraft) => void
 }
 
-const INITIAL_CROP: Point = { x: 0, y: 0 }
-
 export const ImageCropDialog = ({
   open,
   file,
   onClose,
   onApply,
 }: ImageCropDialogProps) => {
-  const [sourceUrl, setSourceUrl] = useState<string | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [crop, setCrop] = useState<Point>(INITIAL_CROP)
-  const [zoom, setZoom] = useState(1)
-  const [rotation, setRotation] = useState(0)
-  const [contentAspect, setContentAspect] = useState(DEFAULT_CONTENT_ASPECT)
-  const [croppedArea, setCroppedArea] = useState<Area | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [applying, setApplying] = useState(false)
-  const [confirmingClose, setConfirmingClose] = useState(false)
-  const previewUrlRef = useRef<string | null>(null)
-  const hasSetInitialContentAspect = useRef(false)
+  const session = useImageCropSession(open, file, onClose, onApply)
 
-  const clearPreview = useCallback(() => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current)
-      previewUrlRef.current = null
-    }
+  if (!open || !file) return null
 
-    setPreviewUrl(null)
-  }, [])
+  const previewSource = session.previewUrl ?? session.sourceUrl
 
-  const requestClose = useCallback(() => {
-    if (!applying) {
-      setConfirmingClose(true)
-    }
-  }, [applying])
-
-  const replacePreview = useCallback(
-    (blob: Blob) => {
-      const nextUrl = URL.createObjectURL(blob)
-      clearPreview()
-      previewUrlRef.current = nextUrl
-      setPreviewUrl(nextUrl)
-    },
-    [clearPreview],
-  )
-
-  useEffect(() => {
-    if (!open || !file) {
-      setSourceUrl(null)
-      return
-    }
-
-    const nextUrl = URL.createObjectURL(file)
-    setSourceUrl(nextUrl)
-
-    return () => URL.revokeObjectURL(nextUrl)
-  }, [file, open])
-
-  useEffect(() => {
-    clearPreview()
-    hasSetInitialContentAspect.current = false
-    setCrop(INITIAL_CROP)
-    setZoom(1)
-    setRotation(0)
-    setContentAspect(DEFAULT_CONTENT_ASPECT)
-    setCroppedArea(null)
-    setError(null)
-    setApplying(false)
-    setConfirmingClose(false)
-  }, [clearPreview, file, open])
-
-  useEffect(() => clearPreview, [clearPreview])
-
-  const isGif = file?.type === 'image/gif'
-
-  useEffect(() => {
-    if (!open || !sourceUrl || isGif || !croppedArea || !file) {
-      return
-    }
-
-    let cancelled = false
-
-    void createCroppedImageBlob(
-      sourceUrl,
-      croppedArea,
-      rotation,
-      getOutputType(file.type),
-    )
-      .then((blob) => {
-        if (!cancelled) {
-          replacePreview(blob)
-          setError(null)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError('预览生成失败，请调整后重试')
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [croppedArea, file, isGif, open, replacePreview, rotation, sourceUrl])
-
-  const resetCrop = () => {
-    setCrop(INITIAL_CROP)
-    setZoom(1)
-    setRotation(0)
-    setContentAspect(DEFAULT_CONTENT_ASPECT)
-    setError(null)
-  }
-
-  const handleMediaLoaded = (mediaSize: MediaSize) => {
-    if (hasSetInitialContentAspect.current) {
-      return
-    }
-
-    hasSetInitialContentAspect.current = true
-    setContentAspect(
-      clamp(
-        mediaSize.naturalWidth / mediaSize.naturalHeight,
-        MIN_CONTENT_ASPECT,
-        MAX_CONTENT_ASPECT,
-      ),
-    )
-  }
-
-  const applyStaticCrop = async () => {
-    if (!file || !sourceUrl || !croppedArea) {
-      setError('图片尚未准备完成，请稍后重试')
-      return
-    }
-
-    setApplying(true)
-    setError(null)
-
-    try {
-      const croppedBlob = await createCroppedImageBlob(
-        sourceUrl,
-        croppedArea,
-        rotation,
-        getOutputType(file.type),
-      )
-      onApply(createImageDraft(file, croppedBlob))
-      onClose()
-    } catch {
-      setError('裁剪图片生成失败，请调整后重试')
-    } finally {
-      setApplying(false)
-    }
-  }
-
-  const confirmGif = () => {
-    if (!file) {
-      return
-    }
-
-    onApply(createImageDraft(file))
-    onClose()
-  }
-
-  if (!open || !file) {
-    return null
-  }
-
-  const previewSource = previewUrl ?? sourceUrl
-
-  if (confirmingClose) {
+  if (session.confirmingClose) {
     return (
       <CropCloseConfirm
-        onContinue={() => setConfirmingClose(false)}
+        onContinue={() => session.setConfirmingClose(false)}
         onDiscard={onClose}
       />
     )
   }
 
-  if (isGif) {
+  if (session.isGif) {
     return (
       <Modal
-        locked={applying}
+        locked={session.applying}
         open
         title="确认正文 GIF"
-        onClose={requestClose}
+        onClose={session.requestClose}
         panelClassName="image-crop-modal"
         footer={
           <>
-            <Button onClick={requestClose} variant="secondary">
+            <Button onClick={session.requestClose} variant="secondary">
               取消
             </Button>
-            <Button icon={<Check />} onClick={confirmGif}>
+            <Button icon={<Check />} onClick={session.confirmGif}>
               确认 GIF
             </Button>
           </>
@@ -226,7 +59,9 @@ export const ImageCropDialog = ({
       >
         <div className="image-crop-dialog image-crop-dialog--gif">
           <div className="image-crop-dialog__gif-preview">
-            {sourceUrl ? <img src={sourceUrl} alt="待确认的 GIF 动画" /> : null}
+            {session.sourceUrl ? (
+              <img src={session.sourceUrl} alt="待确认的 GIF 动画" />
+            ) : null}
           </div>
           <dl className="image-crop-dialog__file-info">
             <div>
@@ -249,24 +84,24 @@ export const ImageCropDialog = ({
 
   return (
     <Modal
-      locked={applying}
+      locked={session.applying}
       open
       title={CONTENT_CROP.title}
-      onClose={requestClose}
+      onClose={session.requestClose}
       panelClassName="image-crop-modal"
       footer={
         <>
           <Button
-            disabled={applying}
-            onClick={requestClose}
+            disabled={session.applying}
+            onClick={session.requestClose}
             variant="secondary"
           >
             取消
           </Button>
           <Button
             icon={<Check />}
-            loading={applying}
-            onClick={() => void applyStaticCrop()}
+            loading={session.applying}
+            onClick={() => void session.applyStaticCrop()}
           >
             应用裁剪
           </Button>
@@ -276,37 +111,37 @@ export const ImageCropDialog = ({
       <div className="image-crop-dialog">
         <div className="image-crop-dialog__workspace">
           <div className="image-crop-dialog__canvas" aria-label="图片裁剪区域">
-            {sourceUrl ? (
+            {session.sourceUrl ? (
               <Cropper
-                aspect={contentAspect}
-                crop={crop}
+                aspect={session.contentAspect}
+                crop={session.crop}
                 cropShape={CONTENT_CROP.cropShape}
                 disableAutomaticStylesInjection
-                image={sourceUrl}
+                image={session.sourceUrl}
                 maxZoom={3}
                 minZoom={1}
-                onCropChange={setCrop}
-                onCropComplete={(_, pixels) => setCroppedArea(pixels)}
-                onMediaLoaded={handleMediaLoaded}
-                onRotationChange={setRotation}
-                onZoomChange={setZoom}
-                rotation={rotation}
+                onCropChange={session.setCrop}
+                onCropComplete={(_, pixels) => session.setCroppedArea(pixels)}
+                onMediaLoaded={session.handleMediaLoaded}
+                onRotationChange={session.setRotation}
+                onZoomChange={session.setZoom}
+                rotation={session.rotation}
                 showGrid={false}
-                zoom={zoom}
+                zoom={session.zoom}
               />
             ) : null}
           </div>
           <CropSidebar
-            aspect={contentAspect}
-            contentAspect={contentAspect}
-            error={error}
-            onContentAspectChange={setContentAspect}
-            onReset={resetCrop}
-            onRotationChange={setRotation}
-            onZoomChange={setZoom}
+            aspect={session.contentAspect}
+            contentAspect={session.contentAspect}
+            error={session.error}
+            onContentAspectChange={session.setContentAspect}
+            onReset={session.resetCrop}
+            onRotationChange={session.setRotation}
+            onZoomChange={session.setZoom}
             previewSource={previewSource}
-            rotation={rotation}
-            zoom={zoom}
+            rotation={session.rotation}
+            zoom={session.zoom}
           />
         </div>
       </div>

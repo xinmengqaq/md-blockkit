@@ -9,7 +9,7 @@ import {
   Italic,
 } from 'lucide-react'
 
-import type { BulkInlineFormat } from '@/model/bulkCommands'
+import type { BulkInlineFormat } from '@/model/commands'
 
 type BlockSelectionToolbarProps = {
   count: number
