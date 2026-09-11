@@ -24,6 +24,7 @@
 
 ## 核心能力
 
+
 | 模块          | 说明                                                                                                   |
 | ------------- | ------------------------------------------------------------------------------------------------------ |
 | 块类型        | 段落、标题、引用、有序/无序/任务列表、代码、图片、表格、分割线。                                       |
@@ -52,7 +53,9 @@ import 'md-blockkit/style.css'
 export function App() {
   const [doc, setDoc] = useState('# Hello\n\n开始写正文。')
 
-  return <DocumentEditor value={doc} onChange={setDoc} placeholder="输入正文" />
+  return (
+    <DocumentEditor value={doc} onChange={setDoc} placeholder="输入正文" />
+  )
 }
 ```
 
@@ -75,7 +78,11 @@ npm run dev
 
 ```tsx
 import { useCallback, useState } from 'react'
-import { DocumentEditor, releaseImageDraft, type ImageDraft } from 'md-blockkit'
+import {
+  DocumentEditor,
+  releaseImageDraft,
+  type ImageDraft,
+} from 'md-blockkit'
 import 'md-blockkit/style.css'
 
 export function App() {
@@ -116,6 +123,7 @@ export function App() {
 
 `ImageDraft`：
 
+
 | 字段           | 说明                        |
 | -------------- | --------------------------- |
 | `id`           | 草稿 id                     |
@@ -130,6 +138,7 @@ export function App() {
 编辑器不发网络请求。
 
 ### `<DocumentEditor />`
+
 
 | Prop                  | Type                              | Default      | Description                       |
 | --------------------- | --------------------------------- | ------------ | --------------------------------- |
@@ -156,7 +165,7 @@ releaseAllImageDrafts(drafts: ImageDraft[]): void
 表格支持 GFM。图片的对齐和宽度会写成 HTML：
 
 ```html
-<p style="text-align:center"><img src="..." alt="..." style="width:80%" /></p>
+<p style="text-align:center"><img src="..." alt="..." style="width:80%"></p>
 ```
 
 行内支持加粗、斜体、下划线、删除线、链接，以及白名单内的文字色 / 背景色。
@@ -182,6 +191,7 @@ releaseAllImageDrafts(drafts: ImageDraft[]): void
 
 ## 快捷键
 
+
 | Keys                                 | Action               |
 | ------------------------------------ | -------------------- |
 | `Ctrl+S`                             | `onSaveShortcut`     |
@@ -189,7 +199,7 @@ releaseAllImageDrafts(drafts: ImageDraft[]): void
 | `Ctrl+B` / `I` / `U`                 | 加粗 / 斜体 / 下划线 |
 | `Ctrl+Shift+X`                       | 删除线               |
 | `Ctrl+K`                             | 链接                 |
-| `Alt+↑` / `Alt+↓`                    | 移动当前块           |
+| `Alt+↑` / `Alt+↓`                  | 移动当前块           |
 | `Enter`                              | 按光标拆分块         |
 | `Shift+Enter`                        | 块内换行             |
 | `Tab` / `Shift+Tab`                  | 列表缩进或表格单元格 |
@@ -208,25 +218,10 @@ npm run lint
 npm run build
 ```
 
-### 目录约定
-
-`src/` 按领域分层，依赖只能向下：
-
-| 目录           | 职责                                            |
-| -------------- | ----------------------------------------------- |
-| `src/model`    | 块类型、工厂、命令、历史。无 React。            |
-| `src/markdown` | Markdown ↔ 块。无 React 组件。                  |
-| `src/html`     | HTML 净化、纯文本、行内 md↔html。               |
-| `src/images`   | 图片草稿与裁剪弹层。                            |
-| `src/editor`   | React 编辑器：会话、输入、画布、块 UI、工具条。 |
-| `src/ui`       | 无业务的按钮 / 弹层 / Toast。                   |
-| `src/styles`   | CSS 变量与代码高亮。                            |
-
-公开 API 只从 `src/index.ts` 导出。
-
 ## 依赖
 
 运行时用到的第三方库：
+
 
 | 库                                                                                                                                                                                                                                                                                       | 用途                           |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
