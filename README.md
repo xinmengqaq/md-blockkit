@@ -190,6 +190,7 @@ releaseAllImageDrafts(drafts: ImageDraft[]): void
 | `Ctrl+Shift+X`                       | 删除线               |
 | `Ctrl+K`                             | 链接                 |
 | `Alt+↑` / `Alt+↓`                    | 移动当前块           |
+| `Delete`                             | 删除已选中的块       |
 | `Enter`                              | 按光标拆分块         |
 | `Shift+Enter`                        | 块内换行             |
 | `Tab` / `Shift+Tab`                  | 列表缩进或表格单元格 |

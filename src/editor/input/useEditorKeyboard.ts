@@ -78,7 +78,7 @@ export const createEditorKeyboardHandlers = (
       !event.metaKey &&
       !event.altKey &&
       !event.shiftKey &&
-      (event.key === 'Backspace' || event.key === 'Delete')
+      event.key === 'Delete'
     ) {
       event.preventDefault()
       model.deleteSelectedBlocks()

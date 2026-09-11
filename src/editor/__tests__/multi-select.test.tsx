@@ -115,6 +115,29 @@ describe('DocumentEditor', () => {
     expect(onChange).toHaveBeenLastCalledWith('保留段')
   })
 
+  it('Delete 应删除已选中的块，Backspace 不应删除块', () => {
+    const onChange = vi.fn()
+    render(
+      <DocumentEditor
+        value={'第一段\n\n第二段\n\n保留段'}
+        onChange={onChange}
+      />,
+    )
+    const editor = screen.getByLabelText('块状 Markdown 编辑器')
+    const handles = screen.getAllByRole('button', { name: '打开块工具' })
+    fireEvent.click(handles[0], { ctrlKey: true })
+    fireEvent.click(handles[1], { ctrlKey: true })
+
+    fireEvent.keyDown(editor, { key: 'Backspace' })
+
+    expect(onChange).not.toHaveBeenCalled()
+    expect(screen.getByText('已选择 2 个块')).toBeInTheDocument()
+
+    fireEvent.keyDown(editor, { key: 'Delete' })
+
+    expect(onChange).toHaveBeenLastCalledWith('保留段')
+  })
+
   it('批量转换为段落应统一所选块类型', () => {
     const onChange = vi.fn()
     render(<DocumentEditor value={'# 标题\n\n> 引用'} onChange={onChange} />)

@@ -14,7 +14,7 @@ const shortcutGroups = [
     title: '块操作',
     items: [
       ['Alt + ↑ / Alt + ↓', '移动当前块'],
-      ['Backspace / Delete', '删除已选中的块'],
+      ['Delete', '删除已选中的块'],
       ['Enter', '按光标位置拆分当前块'],
       ['Shift + Enter', '块内换行'],
     ],
