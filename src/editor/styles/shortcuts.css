@@ -1,0 +1,81 @@
+.block-editor__shortcut-drawer {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  max-height: min(680px, calc(100vh - 48px));
+  overflow: auto;
+  padding: 0 18px 18px;
+  position: absolute;
+  right: 16px;
+  top: 54px;
+  width: min(360px, calc(100% - 32px));
+  z-index: 40;
+}
+
+.block-editor__shortcut-drawer header {
+  align-items: center;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0 12px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.block-editor__shortcut-drawer h2,
+.block-editor__shortcut-drawer h3 {
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.block-editor__shortcut-drawer h2 {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.block-editor__shortcut-drawer h3 {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 650;
+  padding: 16px 0 7px;
+}
+
+.block-editor__shortcut-groups section + section {
+  border-top: 1px solid var(--color-border);
+}
+
+.block-editor__shortcut-drawer dl,
+.block-editor__shortcut-drawer dd {
+  margin: 0;
+}
+
+.block-editor__shortcut-drawer dl {
+  display: grid;
+  gap: 2px;
+}
+
+.block-editor__shortcut-drawer dl > div {
+  align-items: center;
+  display: flex;
+  font-size: 14px;
+  justify-content: space-between;
+  min-height: 30px;
+}
+
+.block-editor__shortcut-drawer dt {
+  color: var(--color-text);
+}
+
+.block-editor__shortcut-drawer kbd {
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font:
+    12px/1.5 Consolas,
+    'Courier New',
+    monospace;
+  padding: 2px 6px;
+}
