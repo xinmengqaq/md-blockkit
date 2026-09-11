@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseMarkdownToBlocks } from './parseMarkdown'
+import { parseMarkdownToBlocks } from '@/markdown/parseMarkdown'
 
 describe('Markdown 解析', () => {
   it('空 Markdown 应解析为一个段落块', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { sanitizeEditorHtml } from './sanitizeHtml'
+import { sanitizeEditorHtml } from '@/markdown/sanitizeHtml'
 
 describe('Markdown HTML 清理', () => {
   it('受限 span 应保留颜色和背景高亮', () => {

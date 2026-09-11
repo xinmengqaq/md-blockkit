@@ -7,7 +7,7 @@ import {
   screen,
   within,
   type ImageDraft,
-} from './helpers'
+} from '../helpers'
 
 describe('DocumentEditor', () => {
   afterEach(() => vi.restoreAllMocks())

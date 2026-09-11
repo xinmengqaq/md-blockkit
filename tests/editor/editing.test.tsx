@@ -7,7 +7,7 @@ import {
   fireEvent,
   render,
   screen,
-} from './helpers'
+} from '../helpers'
 
 describe('DocumentEditor', () => {
   afterEach(() => vi.restoreAllMocks())

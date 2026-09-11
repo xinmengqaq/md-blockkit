@@ -4,7 +4,7 @@ import {
   getImageDraftUrl,
   releaseAllImageDrafts,
   releaseImageDraft,
-} from './drafts'
+} from '@/images/drafts'
 
 afterEach(() => {
   vi.restoreAllMocks()

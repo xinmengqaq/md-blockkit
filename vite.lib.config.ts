@@ -10,7 +10,7 @@ export default defineConfig({
     dts({
       tsconfigPath: './tsconfig.app.json',
       include: ['src'],
-      exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'playground'],
+      exclude: ['playground'],
     }),
   ],
   resolve: {

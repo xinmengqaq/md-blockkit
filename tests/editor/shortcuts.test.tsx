@@ -6,7 +6,7 @@ import {
   render,
   screen,
   selectText,
-} from './helpers'
+} from '../helpers'
 
 describe('DocumentEditor', () => {
   afterEach(() => vi.restoreAllMocks())

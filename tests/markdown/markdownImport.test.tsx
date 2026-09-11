@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { MarkdownImportControl } from '@/editor/chrome/MarkdownImportControl'
-import { normalizeMarkdownImport } from './markdownImport'
+import { normalizeMarkdownImport } from '@/markdown/markdownImport'
 
 const markdownFile = (name: string, content: string) =>
   Object.assign(new File([content], name, { type: 'text/markdown' }), {

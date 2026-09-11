@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import type { TableBlock } from '@/model/types'
-import { parseMarkdownToBlocks } from './parseMarkdown'
-import { serializeBlocksToMarkdown } from './serializeMarkdown'
+import { parseMarkdownToBlocks } from '@/markdown/parseMarkdown'
+import { serializeBlocksToMarkdown } from '@/markdown/serializeMarkdown'
 
 describe('Markdown 序列化', () => {
   it('块列表应序列化回 Markdown 并保留主要块类型', () => {

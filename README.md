@@ -223,7 +223,7 @@ npm run build
 | `src/ui`       | 无业务的按钮 / 弹层 / Toast。                   |
 | `src/styles`   | CSS 变量与代码高亮。                            |
 
-公开 API 只从 `src/index.ts` 导出。
+公开 API 只从 `src/index.ts` 导出。测试在 `tests/`，按 `src` 领域分子目录，不与源码混放。
 
 ## 依赖
 

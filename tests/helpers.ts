@@ -8,7 +8,7 @@ import {
 } from '@testing-library/react'
 
 import type { ImageDraft } from '@/images/types'
-import { DocumentEditor } from '../DocumentEditor'
+import { DocumentEditor } from '@/editor/DocumentEditor'
 
 export const editableCases = [
   {

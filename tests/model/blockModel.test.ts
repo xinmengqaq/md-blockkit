@@ -5,15 +5,20 @@ import {
   duplicateBlock,
   moveBlock,
   removeBlock,
-} from './commands'
+} from '@/model/commands'
 import {
   createDefaultTableBlock,
   createHeadingBlock,
   createParagraphBlock,
   ensureNonEmptyDocument,
   setBlockIdFactory,
-} from './blockModel'
-import { createHistory, pushHistory, redoHistory, undoHistory } from './history'
+} from '@/model/blockModel'
+import {
+  createHistory,
+  pushHistory,
+  redoHistory,
+  undoHistory,
+} from '@/model/history'
 
 describe('块状 Markdown 编辑器块模型', () => {
   let nextId = 0

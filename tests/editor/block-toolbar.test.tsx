@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { DocumentEditor, fireEvent, render, screen, within } from './helpers'
+import { DocumentEditor, fireEvent, render, screen, within } from '../helpers'
 
 describe('DocumentEditor', () => {
   afterEach(() => vi.restoreAllMocks())
