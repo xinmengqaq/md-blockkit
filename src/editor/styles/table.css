@@ -1,0 +1,206 @@
+.block-editor__table-wrap {
+  margin: 8px 0;
+  max-width: 100%;
+  padding: 14px;
+  position: relative;
+}
+
+.block-editor__table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.block-editor__table {
+  border-collapse: collapse;
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+.block-editor__table th,
+.block-editor__table td {
+  border: 1px solid var(--color-border-strong);
+  min-width: 120px;
+  padding: 10px 12px;
+  position: relative;
+  vertical-align: top;
+}
+
+.block-editor__table th {
+  background: var(--color-surface-muted);
+  font-weight: 620;
+}
+
+.block-editor__table th.is-selected,
+.block-editor__table td.is-selected {
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.block-editor__table th.is-selected {
+  background: color-mix(
+    in srgb,
+    var(--color-accent) 12%,
+    var(--color-surface-muted)
+  );
+}
+
+.block-editor__table-menu {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  display: grid;
+  max-height: min(420px, calc(100vh - 32px));
+  overflow: auto;
+  padding: 4px;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: 190px;
+  z-index: 35;
+}
+
+.block-editor__table-menu-section {
+  display: grid;
+  padding: 3px 0;
+}
+
+.block-editor__table-menu-section + .block-editor__table-menu-section {
+  border-top: 1px solid var(--color-border);
+}
+
+.block-editor__table-menu button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  font-size: 14px;
+  gap: 9px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  min-height: 32px;
+  padding: 0 8px;
+  text-align: left;
+}
+
+.block-editor__table-menu button:hover:not(:disabled),
+.block-editor__table-menu button[aria-checked='true'] {
+  background: var(--color-surface-muted);
+}
+
+.block-editor__table-menu button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.block-editor__table-menu button:disabled {
+  cursor: not-allowed;
+  opacity: 0.36;
+}
+
+.block-editor__table-menu button svg {
+  color: var(--color-text-muted);
+  height: 16px;
+  stroke-width: 1.8;
+  width: 16px;
+}
+
+.block-editor__table-menu .block-editor__table-menu-danger {
+  color: var(--color-danger);
+}
+
+.block-editor__table-menu .block-editor__table-menu-danger:hover {
+  background: var(--color-danger-soft);
+}
+
+.block-editor__table-row-controls,
+.block-editor__table-column-controls,
+.block-editor__table-resize-controls {
+  inset: 14px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.block-editor__table-edge-button {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  height: 20px;
+  justify-content: center;
+  opacity: 0;
+  padding: 0;
+  pointer-events: auto;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition:
+    opacity 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
+  width: 20px;
+  z-index: 12;
+}
+
+.block-editor__table-row-controls .block-editor__table-edge-button {
+  left: 0;
+}
+
+.block-editor__table-column-controls .block-editor__table-edge-button {
+  top: 0;
+}
+
+.block-editor__table-wrap:hover .block-editor__table-edge-button,
+.block-editor__table-edge-button:focus-visible {
+  opacity: 1;
+}
+
+.block-editor__table-edge-button:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.block-editor__table-edge-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.block-editor__table-edge-button svg {
+  height: 12px;
+  stroke-width: 2;
+  width: 12px;
+}
+
+.block-editor__table-resize-handle {
+  bottom: 0;
+  cursor: col-resize;
+  pointer-events: auto;
+  position: absolute;
+  top: 0;
+  transform: translateX(-4px);
+  width: 8px;
+  z-index: 8;
+}
+
+.block-editor__table-resize-handle::after {
+  background: var(--color-accent);
+  bottom: 0;
+  content: '';
+  left: 3px;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  transition: opacity 120ms ease;
+  width: 2px;
+}
+
+.block-editor__table-resize-handle:hover::after,
+.block-editor__table-resize-handle:focus-visible::after {
+  opacity: 1;
+}
